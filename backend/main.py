@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException, Header,APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -118,3 +118,26 @@ def refresh(refresh_token: str = Header(None)):
         return {"access_token": new_access_token}
     except:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
+@app.get("/providers", response_model=list[schemas.ProviderOut])
+def list_providers(db: Session = Depends(get_db)):
+    providers = db.query(models.Provider).all()
+    return providers
+
+# Get all policies (optionally filtered by category or provider)
+@app.get("/policies", response_model=list[schemas.PolicyOut])
+def list_policies(category: str | None = None, provider_id: int | None = None, db: Session = Depends(get_db)):
+    q = db.query(models.Policy)
+    if category:
+        q = q.filter(models.Policy.category == category)
+    if provider_id:
+        q = q.filter(models.Policy.provider_id == provider_id)
+    return q.order_by(models.Policy.premium).all()
+
+# Get single policy
+@app.get("/policies/{policy_id}", response_model=schemas.PolicyOut)
+def get_policy(policy_id: int, db: Session = Depends(get_db)):
+    p = db.query(models.Policy).filter(models.Policy.id == policy_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return p

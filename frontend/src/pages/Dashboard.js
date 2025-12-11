@@ -39,7 +39,12 @@ export default function Dashboard() {
         <button className="dash-btn" onClick={()=>navigate("/claims")}>
           📝 File Claim
         </button>
+
+        <button className="dash-btn" onClick={() => navigate("/calculator")}>
+          📱 Premium Calculator
+        </button>
       </div>
+      
 
       <button 
         onClick={logout} 

@@ -84,6 +84,124 @@ body {
   background: #5A52D4;
   transform: scale(1.05);
 }
+/* Policy card */
+.policy-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8ff 100%);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(40,40,70,0.06);
+  border: 1px solid rgba(100,90,180,0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+}
+
+/* buttons */
+.btn-purple {
+  background: linear-gradient(90deg,#6C63FF,#C77DFF);
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.btn-selected {
+  background: #fff;
+  color: #6C63FF;
+  border: 1px solid #6C63FF;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* compare table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+.compare-table th, .compare-table td {
+  border: 1px solid #eee;
+  padding: 12px;
+  text-align: left;
+}
+.compare-table thead th {
+  background: linear-gradient(90deg,#f6f5ff,#fff);
+  color: #333;
+  font-weight: 700;
+}
+.calc-form {
+  width: 350px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0px 3px 12px rgba(0,0,0,0.1);
+}
+
+.calc-input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.result-text {
+  margin-top: 15px;
+  text-align: center;
+  color: #6C63FF;
+  font-weight: bold;
+}
+.calc-card {
+  width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.2);
+}
+
+.calc-input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #bfbfbf;
+  background: #f9f9ff;
+  font-size: 15px;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #6C63FF;
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.result-text {
+  margin-top: 15px;
+  padding: 10px;
+  text-align: center;
+  background: #e9e4ff;
+  color: #6C63FF;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
 
 
 @keyframes fadeIn {

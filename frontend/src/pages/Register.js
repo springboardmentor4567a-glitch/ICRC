@@ -79,7 +79,7 @@ export default function Register() {
           <input className="input-box" type="password" placeholder="Confirm Password"
             value={confirm} onChange={(e)=>setConfirm(e.target.value)} required />
 
-          <button className="btn-purple" type="submit">Register</button>
+          <button className="btn-purple" type="submit">Create Account</button>
 
           <p style={{marginTop:"12px"}}>
             Already have an account? <a href="/login" style={{color:"#c77dff"}}>Login</a>
