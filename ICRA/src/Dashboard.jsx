@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from 'react';
 
 const Dashboard = ({ user, onLogout }) => {
-    // State to control the visibility of the Welcome Banner
+    // State to control the visibility of the Welcome Banner vs Ads
     const [showWelcome, setShowWelcome] = useState(true);
+
+    // Sample Ads Data (10 items related to insurance)
+    const ads = [
+        { id: 1, text: "🚗 Save up to 15% on Comprehensive Auto Insurance this month!" },
+        { id: 2, text: "🏥 Family Health Plans starting at just $99/mo. Protect your loved ones." },
+        { id: 3, text: "✈️ Traveling soon? Get Travel Shield protection for lost baggage & delays." },
+        { id: 4, text: "🏠 Homeowners: Bundle Home & Auto to unlock exclusive loyalty discounts." },
+        { id: 5, text: "👶 New Life Insurance policies now cover critical illness riders for free." },
+        { id: 6, text: "🦷 Dental & Vision add-ons are now available for all Silver Tier members." },
+        { id: 7, text: "🌩️ Storm Season Alert: Review your property coverage for flood protection." },
+        { id: 8, text: "🎓 Student Discount: Good grades can lower your car insurance premiums!" },
+        { id: 9, text: "💼 Small Business Owner? We have new liability packages just for you." },
+        { id: 10, text: "🕒 Limited Time: Switch to Annual Billing and get 1 month FREE." },
+    ];
 
     // Timer: Hide the welcome message after 10 seconds
     useEffect(() => {
         const timer = setTimeout(() => {
             setShowWelcome(false);
-        }, 10000); // 10000 milliseconds = 10 seconds
+        }, 10000); // 10 seconds
 
-        // Cleanup timer if user leaves/logs out before 10s
         return () => clearTimeout(timer);
     }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans">
+        <div className="min-h-screen bg-slate-50 font-sans overflow-x-hidden">
             {/* --- Navbar --- */}
             <nav className="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2">
@@ -40,27 +53,51 @@ const Dashboard = ({ user, onLogout }) => {
             {/* --- Main Content --- */}
             <main className="max-w-6xl mx-auto p-8">
 
-                {/* WELCOME SECTION 
-           Logic: We toggle opacity and max-height to create a smooth slide-up effect.
-        */}
-                <div
-                    className={`transition-all duration-1000 ease-in-out overflow-hidden
-            ${showWelcome ? 'opacity-100 max-h-96 mb-8' : 'opacity-0 max-h-0 mb-0'}`}
-                >
-                    <div className="bg-gradient-to-r from-blue-600 to-slate-800 rounded-2xl p-10 text-white shadow-xl relative">
-                        <div className="relative z-10">
-                            <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
-                            <p className="text-blue-100 text-lg">Your insurance portfolio is looking healthy today.</p>
-                            {/* Optional countdown bar or visual indicator could go here */}
+                {/* CONTAINER FOR WELCOME & ADS (Switches between them) */}
+                <div className="relative mb-8 min-h-[160px] transition-all duration-1000">
+
+                    {/* 1. WELCOME BANNER (Visible initially) */}
+                    <div
+                        className={`absolute top-0 left-0 w-full transition-opacity duration-1000 ease-in-out
+              ${showWelcome ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                    >
+                        <div className="bg-gradient-to-r from-blue-600 to-slate-800 rounded-2xl p-10 text-white shadow-xl relative overflow-hidden h-40 flex flex-col justify-center">
+                            <div className="relative z-10">
+                                <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+                                <p className="text-blue-100 text-lg">We are here to help you protect what matters most.</p>
+                            </div>
+                            {/* Decoration */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                         </div>
-                        {/* Decorative circles */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
-                        <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400 opacity-10 rounded-full -ml-10 -mb-10"></div>
                     </div>
+
+                    {/* 2. ADVERTISEMENT SCROLLER (Visible after 10s) */}
+                    <div
+                        className={`absolute top-0 left-0 w-full transition-opacity duration-1000 ease-in-out h-32
+              ${!showWelcome ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    >
+                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 h-full flex items-center overflow-hidden relative">
+                            {/* Label */}
+                            <div className="absolute left-0 top-0 bottom-0 bg-red-500 text-white text-xs font-bold px-2 flex items-center justify-center z-20 shadow-md">
+                                <span className="-rotate-90 tracking-widest uppercase">Offers</span>
+                            </div>
+
+                            {/* Scrolling Track */}
+                            <div className="flex animate-scroll whitespace-nowrap items-center hover:pause">
+                                {/* We repeat the ads list twice to create a seamless infinite loop */}
+                                {[...ads, ...ads].map((ad, index) => (
+                                    <div key={index} className="inline-block px-8 py-4 mx-4 bg-slate-50 rounded-xl border border-slate-100 text-slate-700 font-medium text-lg flex items-center gap-3 shadow-sm min-w-[300px]">
+                                        {ad.text}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                {/* --- Dashboard Grid --- */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* --- Dashboard Grid (Always below) --- */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                     {/* Card 1: My Policies */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
                         <div className="h-12 w-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600 mb-4">
@@ -90,6 +127,20 @@ const Dashboard = ({ user, onLogout }) => {
                 </div>
 
             </main>
+
+            {/* INLINE STYLES FOR SCROLL ANIMATION */}
+            <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+          animation: scroll 40s linear infinite;
+        }
+        .hover\\:pause:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
         </div>
     );
 };
