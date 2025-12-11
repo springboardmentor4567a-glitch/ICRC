@@ -1,0 +1,16 @@
+# --- System Files ---
+.DS_Store
+Thumbs.db
+
+# --- Python (Backend) ---
+icra-backend/venv/
+icra-backend/__pycache__/
+*.pyc
+
+# --- Node (Frontend) ---
+ICRA/node_modules/
+ICRA/dist/
+ICRA/.env
+
+# --- VS Code Settings ---
+.vscode/
