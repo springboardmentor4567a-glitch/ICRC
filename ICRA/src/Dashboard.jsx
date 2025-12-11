@@ -2,19 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const Dashboard = ({ user, onLogout }) => {
     const [showWelcome, setShowWelcome] = useState(true);
+    const [isPaused, setIsPaused] = useState(false); // New state to pause scroll on hover
     const scrollRef = useRef(null);
 
-    // Sample Insurance Images (Using high-quality placeholders)
+    // Sample Insurance Images
     const adImages = [
-        "https://images.unsplash.com/photo-1548695607-9c73430ba065?auto=format&fit=crop&w=800&q=80", // Happy Family (Health)
-        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80", // Red Sports Car (Auto)
-        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80", // Modern House (Home)
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80", // Business Meeting (Liability)
-        "https://images.unsplash.com/photo-1504198458649-3128b932f49e?auto=format&fit=crop&w=800&q=80", // Travel/Plane (Travel)
-        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80", // Doctor (Medical)
+        "https://images.unsplash.com/photo-1548695607-9c73430ba065?auto=format&fit=crop&w=800&q=80", // Family
+        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80", // Car
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80", // House
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80", // Business
+        "https://images.unsplash.com/photo-1504198458649-3128b932f49e?auto=format&fit=crop&w=800&q=80", // Travel
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80", // Medical
     ];
 
-    // Timer: Hide welcome message after 10 seconds
+    // 1. Timer: Hide welcome message after 10 seconds
     useEffect(() => {
         const timer = setTimeout(() => {
             setShowWelcome(false);
@@ -22,11 +23,34 @@ const Dashboard = ({ user, onLogout }) => {
         return () => clearTimeout(timer);
     }, []);
 
-    // Manual Scroll Handlers
+    // 2. Auto-Scroll Logic (New)
+    useEffect(() => {
+        let scrollInterval;
+
+        // Only scroll if NOT paused and the Welcome message is gone
+        if (!isPaused && !showWelcome) {
+            scrollInterval = setInterval(() => {
+                if (scrollRef.current) {
+                    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+
+                    // If we reach the end, reset to 0. Otherwise, scroll 1px.
+                    if (scrollLeft + clientWidth >= scrollWidth - 1) {
+                        scrollRef.current.scrollLeft = 0;
+                    } else {
+                        scrollRef.current.scrollLeft += 1; // Speed of scroll
+                    }
+                }
+            }, 30); // Update every 30ms for smooth slow scroll
+        }
+
+        return () => clearInterval(scrollInterval);
+    }, [isPaused, showWelcome]);
+
+    // 3. Manual Scroll Buttons
     const scroll = (direction) => {
         if (scrollRef.current) {
             const { current } = scrollRef;
-            const scrollAmount = 400; // Scroll distance
+            const scrollAmount = 400;
             if (direction === 'left') {
                 current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             } else {
@@ -64,8 +88,7 @@ const Dashboard = ({ user, onLogout }) => {
                 {/* CONTAINER FOR WELCOME & ADS */}
                 <div className="relative mb-8 transition-all duration-1000">
 
-                    {/* 1. WELCOME BANNER */}
-                    {/* Logic: When active, full opacity & height. When inactive, 0 opacity & 0 height (smooth collapse) */}
+                    {/* 1. WELCOME BANNER (Fades Out) */}
                     <div
                         className={`transition-all duration-1000 ease-in-out overflow-hidden
               ${showWelcome ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0'}`}
@@ -79,19 +102,21 @@ const Dashboard = ({ user, onLogout }) => {
                         </div>
                     </div>
 
-                    {/* 2. ADVERTISEMENT SCROLLER */}
-                    {/* Logic: Reverse of above. Starts 0 height/opacity, then expands to h-64 */}
+                    {/* 2. ADVERTISEMENT SCROLLER (Reveals & Auto-Scrolls) */}
                     <div
                         className={`transition-all duration-1000 ease-in-out overflow-hidden relative group
               ${!showWelcome ? 'opacity-100 max-h-96 mt-4' : 'opacity-0 max-h-0 mt-0'}`}
+                        // Pause auto-scroll on hover so user can click buttons easily
+                        onMouseEnter={() => setIsPaused(true)}
+                        onMouseLeave={() => setIsPaused(false)}
                     >
-                        {/* Main Image Container (h-64 = 16rem = approx 256px, 2x bigger) */}
+                        {/* Main Image Container */}
                         <div className="h-64 rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative bg-white">
 
                             {/* Left Button (Visible on Hover) */}
                             <button
                                 onClick={() => scroll('left')}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                             </button>
@@ -99,7 +124,7 @@ const Dashboard = ({ user, onLogout }) => {
                             {/* Right Button (Visible on Hover) */}
                             <button
                                 onClick={() => scroll('right')}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </button>
@@ -108,15 +133,15 @@ const Dashboard = ({ user, onLogout }) => {
                             <div
                                 ref={scrollRef}
                                 className="flex items-center h-full overflow-x-auto scroll-smooth no-scrollbar"
-                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Hide scrollbar
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                             >
-                                {/* Images repeated for effect */}
-                                {[...adImages, ...adImages].map((imgUrl, index) => (
+                                {/* Images repeated 3 times to ensure long scrolling loop */}
+                                {[...adImages, ...adImages, ...adImages].map((imgUrl, index) => (
                                     <div key={index} className="flex-shrink-0 h-full w-[400px] border-r border-white/20 relative">
                                         <img src={imgUrl} alt="Insurance Offer" className="w-full h-full object-cover" />
-                                        {/* Subtle overlay gradient for professional look */}
+                                        {/* Subtle overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                                            <span className="text-white font-bold tracking-wider uppercase text-sm opacity-80">Featured Plan</span>
+                                            <span className="text-white font-bold tracking-wider uppercase text-sm opacity-90 shadow-sm">Featured Plan</span>
                                         </div>
                                     </div>
                                 ))}
@@ -126,9 +151,8 @@ const Dashboard = ({ user, onLogout }) => {
 
                 </div>
 
-                {/* --- Dashboard Grid (Always below) --- */}
+                {/* --- Dashboard Grid --- */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                    {/* Card 1: My Policies */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
                         <div className="h-12 w-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600 mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -136,8 +160,6 @@ const Dashboard = ({ user, onLogout }) => {
                         <h3 className="text-lg font-bold text-slate-800 mb-2">My Policies</h3>
                         <p className="text-slate-500 text-sm leading-relaxed">View your active plans, download documents, and manage renewals easily.</p>
                     </div>
-
-                    {/* Card 2: Find Insurance */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
                         <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -145,8 +167,6 @@ const Dashboard = ({ user, onLogout }) => {
                         <h3 className="text-lg font-bold text-slate-800 mb-2">Find Insurance</h3>
                         <p className="text-slate-500 text-sm leading-relaxed">Compare quotes from top providers and get AI-powered recommendations.</p>
                     </div>
-
-                    {/* Card 3: File a Claim */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
                         <div className="h-12 w-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
