@@ -1,31 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Dashboard = ({ user, onLogout }) => {
-    // State to control the visibility of the Welcome Banner vs Ads
     const [showWelcome, setShowWelcome] = useState(true);
+    const scrollRef = useRef(null);
 
-    // Sample Ads Data (10 items related to insurance)
-    const ads = [
-        { id: 1, text: "🚗 Save up to 15% on Comprehensive Auto Insurance this month!" },
-        { id: 2, text: "🏥 Family Health Plans starting at just $99/mo. Protect your loved ones." },
-        { id: 3, text: "✈️ Traveling soon? Get Travel Shield protection for lost baggage & delays." },
-        { id: 4, text: "🏠 Homeowners: Bundle Home & Auto to unlock exclusive loyalty discounts." },
-        { id: 5, text: "👶 New Life Insurance policies now cover critical illness riders for free." },
-        { id: 6, text: "🦷 Dental & Vision add-ons are now available for all Silver Tier members." },
-        { id: 7, text: "🌩️ Storm Season Alert: Review your property coverage for flood protection." },
-        { id: 8, text: "🎓 Student Discount: Good grades can lower your car insurance premiums!" },
-        { id: 9, text: "💼 Small Business Owner? We have new liability packages just for you." },
-        { id: 10, text: "🕒 Limited Time: Switch to Annual Billing and get 1 month FREE." },
+    // Sample Insurance Images (Using high-quality placeholders)
+    const adImages = [
+        "https://images.unsplash.com/photo-1548695607-9c73430ba065?auto=format&fit=crop&w=800&q=80", // Happy Family (Health)
+        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80", // Red Sports Car (Auto)
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80", // Modern House (Home)
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80", // Business Meeting (Liability)
+        "https://images.unsplash.com/photo-1504198458649-3128b932f49e?auto=format&fit=crop&w=800&q=80", // Travel/Plane (Travel)
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80", // Doctor (Medical)
     ];
 
-    // Timer: Hide the welcome message after 10 seconds
+    // Timer: Hide welcome message after 10 seconds
     useEffect(() => {
         const timer = setTimeout(() => {
             setShowWelcome(false);
-        }, 10000); // 10 seconds
-
+        }, 10000);
         return () => clearTimeout(timer);
     }, []);
+
+    // Manual Scroll Handlers
+    const scroll = (direction) => {
+        if (scrollRef.current) {
+            const { current } = scrollRef;
+            const scrollAmount = 400; // Scroll distance
+            if (direction === 'left') {
+                current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans overflow-x-hidden">
@@ -53,41 +61,63 @@ const Dashboard = ({ user, onLogout }) => {
             {/* --- Main Content --- */}
             <main className="max-w-6xl mx-auto p-8">
 
-                {/* CONTAINER FOR WELCOME & ADS (Switches between them) */}
-                <div className="relative mb-8 min-h-[160px] transition-all duration-1000">
+                {/* CONTAINER FOR WELCOME & ADS */}
+                <div className="relative mb-8 transition-all duration-1000">
 
-                    {/* 1. WELCOME BANNER (Visible initially) */}
+                    {/* 1. WELCOME BANNER */}
+                    {/* Logic: When active, full opacity & height. When inactive, 0 opacity & 0 height (smooth collapse) */}
                     <div
-                        className={`absolute top-0 left-0 w-full transition-opacity duration-1000 ease-in-out
-              ${showWelcome ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                        className={`transition-all duration-1000 ease-in-out overflow-hidden
+              ${showWelcome ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0'}`}
                     >
-                        <div className="bg-gradient-to-r from-blue-600 to-slate-800 rounded-2xl p-10 text-white shadow-xl relative overflow-hidden h-40 flex flex-col justify-center">
+                        <div className="bg-gradient-to-r from-blue-600 to-slate-800 rounded-2xl p-10 text-white shadow-xl relative h-64 flex flex-col justify-center">
                             <div className="relative z-10">
                                 <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
                                 <p className="text-blue-100 text-lg">We are here to help you protect what matters most.</p>
                             </div>
-                            {/* Decoration */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                         </div>
                     </div>
 
-                    {/* 2. ADVERTISEMENT SCROLLER (Visible after 10s) */}
+                    {/* 2. ADVERTISEMENT SCROLLER */}
+                    {/* Logic: Reverse of above. Starts 0 height/opacity, then expands to h-64 */}
                     <div
-                        className={`absolute top-0 left-0 w-full transition-opacity duration-1000 ease-in-out h-32
-              ${!showWelcome ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        className={`transition-all duration-1000 ease-in-out overflow-hidden relative group
+              ${!showWelcome ? 'opacity-100 max-h-96 mt-4' : 'opacity-0 max-h-0 mt-0'}`}
                     >
-                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 h-full flex items-center overflow-hidden relative">
-                            {/* Label */}
-                            <div className="absolute left-0 top-0 bottom-0 bg-red-500 text-white text-xs font-bold px-2 flex items-center justify-center z-20 shadow-md">
-                                <span className="-rotate-90 tracking-widest uppercase">Offers</span>
-                            </div>
+                        {/* Main Image Container (h-64 = 16rem = approx 256px, 2x bigger) */}
+                        <div className="h-64 rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative bg-white">
+
+                            {/* Left Button (Visible on Hover) */}
+                            <button
+                                onClick={() => scroll('left')}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+
+                            {/* Right Button (Visible on Hover) */}
+                            <button
+                                onClick={() => scroll('right')}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </button>
 
                             {/* Scrolling Track */}
-                            <div className="flex animate-scroll whitespace-nowrap items-center hover:pause">
-                                {/* We repeat the ads list twice to create a seamless infinite loop */}
-                                {[...ads, ...ads].map((ad, index) => (
-                                    <div key={index} className="inline-block px-8 py-4 mx-4 bg-slate-50 rounded-xl border border-slate-100 text-slate-700 font-medium text-lg flex items-center gap-3 shadow-sm min-w-[300px]">
-                                        {ad.text}
+                            <div
+                                ref={scrollRef}
+                                className="flex items-center h-full overflow-x-auto scroll-smooth no-scrollbar"
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Hide scrollbar
+                            >
+                                {/* Images repeated for effect */}
+                                {[...adImages, ...adImages].map((imgUrl, index) => (
+                                    <div key={index} className="flex-shrink-0 h-full w-[400px] border-r border-white/20 relative">
+                                        <img src={imgUrl} alt="Insurance Offer" className="w-full h-full object-cover" />
+                                        {/* Subtle overlay gradient for professional look */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                                            <span className="text-white font-bold tracking-wider uppercase text-sm opacity-80">Featured Plan</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -127,20 +157,6 @@ const Dashboard = ({ user, onLogout }) => {
                 </div>
 
             </main>
-
-            {/* INLINE STYLES FOR SCROLL ANIMATION */}
-            <style>{`
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-scroll {
-          animation: scroll 40s linear infinite;
-        }
-        .hover\\:pause:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
         </div>
     );
 };
