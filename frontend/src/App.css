@@ -1,0 +1,95 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0a0a0f, #1b1b2f);
+  color: #fff;
+}
+
+.center-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form-card {
+  width: 380px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  padding: 35px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 0 15px rgba(155,0,255,0.4);
+  animation: fadeIn .6s ease;
+}
+
+.form-card h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: 600;
+  color: #b84fff;
+  text-shadow: 0 0 10px rgba(184,79,255,0.8);
+}
+
+.input-box {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  outline: none;
+}
+
+.btn-purple {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #b84fff;
+  font-size: 17px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  color: black;
+  transition: 0.3s;
+}
+
+.btn-purple:hover {
+  background: #d780ff;
+  transform: scale(1.03);
+}
+
+.home-title {
+  text-align: center;
+  margin-top: 120px;
+  color: #a64dff;
+  font-size: 40px;
+  text-shadow: 0 0 15px rgba(150,0,255,0.7);
+}
+.dash-btn {
+  background: #6C63FF;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.dash-btn:hover {
+  background: #5A52D4;
+  transform: scale(1.05);
+}
+
+
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(15px);}
+  to {opacity:1; transform:translateY(0);}
+}
+.msg-error{ color:red; font-weight:bold; margin-bottom:8px; }
+.msg-success{ color:#22c55e; font-weight:bold; margin-bottom:8px; }
+
