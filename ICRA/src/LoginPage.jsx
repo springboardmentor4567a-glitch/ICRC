@@ -146,7 +146,9 @@ const LoginPage = ({ onLoginSuccess }) => {
             )}
 
             {/* --- 2. MAIN CARD CONTAINER --- */}
-            <div className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[600px] overflow-hidden transition-opacity duration-1000 ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
+            {/* FIX: Added 'invisible' when showIntro is true to stop password managers from popping up over the intro */}
+            <div className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[600px] overflow-hidden transition-all duration-1000 
+            ${showIntro ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
 
                 {/* --- REGISTER FORM (Left Side / Hidden initially) --- */}
                 <div className={`absolute top-0 h-full w-1/2 transition-all duration-700 ease-in-out flex flex-col justify-center items-center p-10 bg-white
