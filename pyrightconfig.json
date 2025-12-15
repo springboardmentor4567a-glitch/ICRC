@@ -1,0 +1,11 @@
+{
+  "venvPath": "./icra-backend",
+  "venv": "venv",
+  "pythonVersion": "3.13",
+  "pythonPath": "./icra-backend/venv/bin/python",
+  "extraPaths": [
+    "/Users/imran/Immu/Code Snippets & Files/Internship/InfosysSpringBoard (Dec25-Feb25)/Code/icra-backend/venv/lib/python3.13/site-packages"
+  ]
+}
+
+

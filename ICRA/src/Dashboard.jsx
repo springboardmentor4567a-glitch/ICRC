@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for switching pages
-
+const Dashboard = ({ user, onLogout, onNavigate }) => {
   // --- STATES ---
   const [showWelcome, setShowWelcome] = useState(true);
   const [isPaused, setIsPaused] = useState(false); // Controls auto-scroll pause on hover
@@ -112,7 +111,6 @@ const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for 
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            {/* Larger container (h-80) as requested */}
             <div className="h-80 rounded-2xl shadow-lg border border-slate-200 overflow-hidden relative bg-white">
 
               {/* Left Button */}
@@ -120,7 +118,9 @@ const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for 
                 onClick={() => scroll('left')}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
 
               {/* Right Button */}
@@ -128,7 +128,9 @@ const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for 
                 onClick={() => scroll('right')}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
 
               {/* Scrolling Track */}
@@ -152,22 +154,32 @@ const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for 
 
         </div>
 
-        {/* --- GRID LAYOUT: Updated to 4 Columns --- */}
+        {/* --- GRID LAYOUT: 4 Columns --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
 
           {/* Card 1: My Policies */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
+          <div
+            onClick={() => onNavigate('my-policies')}
+            className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer"
+          >
             <div className="h-12 w-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
             <h3 className="text-lg font-bold text-slate-800 mb-2">My Policies</h3>
             <p className="text-slate-500 text-sm leading-relaxed">View your active plans, download documents, and manage renewals easily.</p>
           </div>
 
-          {/* Card 2: Find Insurance */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
+          {/* Card 2: Find Insurance (CLICKABLE) */}
+          <div
+            onClick={() => onNavigate('find-insurance')}
+            className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer"
+          >
             <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
             <h3 className="text-lg font-bold text-slate-800 mb-2">Find Insurance</h3>
             <p className="text-slate-500 text-sm leading-relaxed">Compare quotes from top providers and get AI-powered recommendations.</p>
@@ -176,15 +188,17 @@ const Dashboard = ({ user, onLogout, onNavigate }) => { // Added onNavigate for 
           {/* Card 3: File a Claim */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer">
             <div className="h-12 w-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
             </div>
             <h3 className="text-lg font-bold text-slate-800 mb-2">File a Claim</h3>
             <p className="text-slate-500 text-sm leading-relaxed">Submit documents, track status, and get your claims settled faster.</p>
           </div>
 
-          {/* Card 4: Calculators (NEW) */}
+          {/* Card 4: Calculators (CLICKABLE) */}
           <div
-            onClick={() => onNavigate('calculators')} // Switches to Calculator View
+            onClick={() => onNavigate('calculators')}
             className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer"
           >
             <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 mb-4">

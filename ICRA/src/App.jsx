@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import LoginPage from './LoginPage';
 import Dashboard from './Dashboard';
-import Calculators from './Calculators'; // Import the new page
+import Calculators from './Calculators';
+import FindInsurance from './FindInsurance'; // New Page
+import MyPolicies from './MyPolicies';       // New Page
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // State for navigation
+  const [currentView, setCurrentView] = useState('dashboard'); // Navigation State
 
   // --- CHECK FOR SAVED SESSION ON LOAD ---
   useEffect(() => {
@@ -51,6 +53,16 @@ function App() {
           )}
           {currentView === 'calculators' && (
             <Calculators
+              onBack={() => setCurrentView('dashboard')}
+            />
+          )}
+          {currentView === 'find-insurance' && (
+            <FindInsurance
+              onBack={() => setCurrentView('dashboard')}
+            />
+          )}
+          {currentView === 'my-policies' && (
+            <MyPolicies
               onBack={() => setCurrentView('dashboard')}
             />
           )}
