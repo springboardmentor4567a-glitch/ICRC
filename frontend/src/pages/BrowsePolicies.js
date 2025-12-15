@@ -19,7 +19,7 @@ export default function BrowsePolicies() {
   }, []);
 
   const filtered = policies
-    .filter((p) => (filterProvider ? p.provider_id == filterProvider : true))
+    .filter((p) => (filterProvider ? p.provider_id === filterProvider : true))
     .filter((p) => (filterCategory ? p.category === filterCategory : true))
     .sort((a, b) => {
       if (sortType === "low") return a.premium - b.premium;
@@ -61,7 +61,7 @@ export default function BrowsePolicies() {
         {filtered.map((p) => (
           <div key={p.id} className="policy-card">
             <h3>{p.name}</h3>
-            <p><strong>Provider:</strong> {p.provider_name}</p>
+            <p><strong>Provider:</strong> {providers.find(x=>x.id===p.provider_id)?.name}</p>
             <p><strong>Category:</strong> {p.category}</p>
             <p><strong>Coverage:</strong> ₹{p.coverage}</p>
             <p><strong>Premium:</strong> ₹{p.premium}/year</p>

@@ -27,7 +27,9 @@ export default function Calculator() {
   return (
     <div style={{ padding: "20px" }}>
       <h2 className="page-title">Premium Calculator</h2>
-
+      <p className="page-desc">
+      Estimate your insurance premium based on age, coverage, and health status
+    </p>
       <div className="calc-card">
 
         <label>Age</label>

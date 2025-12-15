@@ -21,7 +21,6 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) return setError(data.detail || "Invalid email or password ❌");
 
-      // store JWT tokens
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
 
@@ -34,34 +33,57 @@ export default function Login() {
   return (
     <>
       {/* Heading */}
-      <h1 style={{
-        textAlign:"center",
-        marginTop:"40px",
-        marginBottom:"20px",
-        fontSize:"32px",
-        fontWeight:"bold",
-        color:"#6C63FF"
-      }}>
+      <h1
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+          marginBottom: "20px",
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "#6C63FF",
+        }}
+      >
         Insurance Comparison, Recommendation & Claim Assistant
       </h1>
 
       <div className="center-box">
-
-        {error && <p className="msg-error" style={{color:"red"}}>{error}</p>}
-
         <form onSubmit={submit} className="form-card">
           <h2>Login</h2>
 
-          <input className="input-box" type="email" placeholder="Email"
-            value={email} onChange={(e)=>setEmail(e.target.value)} required />
+          {/* ✅ ERROR MESSAGE – FIXED POSITION */}
+          {error && (
+            <div className="msg-error" style={{ textAlign: "center" }}>
+              {error}
+            </div>
+          )}
 
-          <input className="input-box" type="password" placeholder="Password"
-            value={password} onChange={(e)=>setPassword(e.target.value)} required />
+          <input
+            className="input-box"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <button className="btn-purple" type="submit">Login</button>
+          <input
+            className="input-box"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-          <p style={{marginTop:"12px"}}>
-            Don't have an account? <a href="/register" style={{color:"#c77dff"}}>Register</a>
+          <div className="form-actions">
+            <button className="btn-purple">Login</button>
+          </div>
+
+          <p style={{ marginTop: "12px" }}>
+            Don't have an account?{" "}
+            <a href="/register" style={{ color: "#c77dff" }}>
+              Register
+            </a>
           </p>
         </form>
       </div>

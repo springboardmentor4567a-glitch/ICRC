@@ -16,6 +16,9 @@ export default function Recommendations() {
   return (
     <div style={{ textAlign:"center", paddingTop:"40px", color:"white" }}>
       <h1 style={{ color:"#9d4edd", fontSize:"30px" }}>Get Recommendations 🤝</h1>
+       <p className="page-desc">
+      Provide your details to receive the most suitable insurance plans
+    </p>
       <p style={{ color:"#a6e3a1" }}>Fill your details & get best policy suggestions</p>
 
       <div style={{

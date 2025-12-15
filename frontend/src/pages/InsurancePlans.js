@@ -1,37 +1,74 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function InsurancePlans() {
-  const plans = [
-    { name: "LIC Jeevan Anand", policy_no: "LIC984523", coverage: "Life + Maturity", premium: "₹12,000/year" },
-    { name: "HDFC Life Sanchay Plus", policy_no: "HDFC778899", coverage: "Wealth & Life", premium: "₹18,000/year" },
-    { name: "Tata AIA Smart Protect", policy_no: "TATA557733", coverage: "Life Insurance", premium: "₹8,500/year" },
-    { name: "Star Health Family Optima", policy_no: "STAR444221", coverage: "Health Cover", premium: "₹14,000/year" }
-  ];
+  const [policies, setPolicies] = useState([]);
+  const [selected, setSelected] = useState(() => {
+    return JSON.parse(localStorage.getItem("compare_selected") || "[]");
+  });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/policies")
+      .then(res => res.json())
+      .then(data => setPolicies(data));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("compare_selected", JSON.stringify(selected));
+  }, [selected]);
+
+  const toggleSelect = (id) => {
+    if (selected.includes(id)) {
+      setSelected(selected.filter(x => x !== id));
+    } else {
+      if (selected.length >= 3) {
+        alert("You can compare up to 3 policies only");
+        return;
+      }
+      setSelected([...selected, id]);
+    }
+  };
 
   return (
-    <div style={{ textAlign: "center", paddingTop: "40px", color: "white" }}>
-      <h1 style={{ color: "#9d4edd", fontSize: "30px", marginBottom: "10px" }}>
-        Insurance Plans 📄
-      </h1>
-      <p style={{ color: "#a6e3a1", marginBottom: "30px" }}>
-        Explore Available Policies & Benefits
-      </p>
+    <div style={{ padding: "30px", maxWidth: "900px", margin: "auto" }}>
+      <h2 style={{ textAlign: "center", color: "#8b5cf6" }}>
+        Insurance Plans
+      </h2>
 
-      <div style={{ width:"60%", margin:"auto", background:"#1e1e2f",
-        padding:"30px", borderRadius:"10px", boxShadow:"0 0 15px #6a0dad" }}>
-
-        {plans.map((p,i)=>(
-          <div key={i} style={{
-            background:"#2a2a3d", padding:"15px", margin:"10px 0",
-            borderRadius:"8px", textAlign:"left", color:"white"
-          }}>
-            <h3 style={{color:"#c77dff"}}>{p.name}</h3>
-            <p><b>Policy Number:</b> {p.policy_no}</p>
-            <p><b>Coverage:</b> {p.coverage}</p>
-            <p><b>Premium:</b> {p.premium}</p>
-          </div>
-        ))}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <button
+          onClick={() => {
+            if (selected.length < 2) {
+              alert("Select at least 2 policies to compare");
+              return;
+            }
+            navigate("/compare");
+          }}
+          className="btn-purple"
+        >
+          Compare ({selected.length})
+        </button>
       </div>
+
+      {policies.map(p => (
+        <div key={p.id} className="policy-card" style={{ marginBottom: 16 }}>
+          <h3 style={{ color: "#a78bfa" }}>{p.name}</h3>
+          <p><b>Policy Number:</b> {p.policy_number}</p>
+          <p><b>Category:</b> {p.category}</p>
+          <p><b>Coverage:</b> ₹{p.coverage}</p>
+          <p><b>Premium:</b> ₹{p.premium} / year</p>
+          <p><b>Benefits:</b> {p.benefits}</p>
+
+          <button
+            onClick={() => toggleSelect(p.id)}
+            className={selected.includes(p.id) ? "btn-selected" : "btn-outline"}
+          >
+            {selected.includes(p.id) ? "Selected" : "Select to Compare"}
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,63 +1,48 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
   return (
-    <div style={{
-      textAlign:"center",
-      marginTop:"60px"
-    }}>
-      <h1 style={{fontSize:"30px", color:"#6C63FF", fontWeight:"bold"}}>
-        Welcome to Insurance Dashboard 🛡️
-      </h1>
-
-      <p style={{fontSize:"20px", marginTop:"8px", color:"#41eb77ff"}}>
-        Choose an option below to continue👇
-      </p>
-
-      <div style={{
-        display:"flex",
-        justifyContent:"center",
-        gap:"20px",
-        marginTop:"40px"
-      }}>
-        <button className="dash-btn" onClick={()=>navigate("/plans")}>
-          📄 Insurance Plans
-        </button>
-
-        <button className="dash-btn" onClick={()=>navigate("/recommend")}>
-          🤖 Get Recommendations
-        </button>
-
-        <button className="dash-btn" onClick={()=>navigate("/claims")}>
-          📝 File Claim
-        </button>
-
-        <button className="dash-btn" onClick={() => navigate("/calculator")}>
-          📱 Premium Calculator
-        </button>
+    <div className="dashboard-container">
+      {/* Header */}
+      <div className="dashboard-header">
+        <h1>Welcome to Insurance Dashboard 🛡️</h1>
+        <p>Manage, compare and calculate insurance plans easily</p>
       </div>
-      
 
-      <button 
-        onClick={logout} 
-        style={{
-          marginTop:"50px",
-          padding:"10px 20px",
-          background:"#ff4757",
-          color:"white",
-          border:"none",
-          borderRadius:"5px",
-          cursor:"pointer"
-        }}>
-        Logout 🚪
+      {/* Cards */}
+      <div className="dashboard-grid">
+        <div className="dash-card" onClick={() => navigate("/plans")}>
+          <span className="icon">📄</span>
+          <h3>Insurance Plans</h3>
+          <p>Browse available insurance policies and benefits</p>
+        </div>
+
+        <div className="dash-card" onClick={() => navigate("/recommend")}>
+          <span className="icon">🤝</span>
+          <h3>Recommendations</h3>
+          <p>Get best policy suggestions based on your details</p>
+        </div>
+
+        <div className="dash-card" onClick={() => navigate("/claims")}>
+          <span className="icon">📝</span>
+          <h3>File Claim</h3>
+          <p>Submit insurance claims and upload documents</p>
+        </div>
+
+        <div className="dash-card" onClick={() => navigate("/calculator")}>
+          <span className="icon">💰</span>
+          <h3>Premium Calculator</h3>
+          <p>Estimate premium based on age & coverage</p>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <button className="logout-btn" onClick={() => navigate("/")}>
+        Logout
       </button>
     </div>
   );

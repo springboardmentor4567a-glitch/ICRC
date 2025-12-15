@@ -1,0 +1,72 @@
+.dashboard-container {
+  min-height: 100vh;
+  padding: 50px;
+  background: radial-gradient(circle at top, #1b1b3a, #0b0b16);
+  color: white;
+  text-align: center;
+}
+
+.dashboard-header h1 {
+  color: #8f7cff;
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.dashboard-header p {
+  color: #b5b5ff;
+  margin-bottom: 50px;
+  font-size: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.dash-card {
+  background: #1f1f3d;
+  padding: 30px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(143, 124, 255, 0.25);
+  transition: all 0.3s ease;
+}
+
+.dash-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 0 40px rgba(143, 124, 255, 0.6);
+}
+
+.dash-card .icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.dash-card h3 {
+  color: #c77dff;
+  margin-bottom: 10px;
+}
+
+.dash-card p {
+  font-size: 14px;
+  color: #d1d1ff;
+}
+
+.logout-btn {
+  margin-top: 50px;
+  padding: 12px 30px;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #ff1f1f;
+}

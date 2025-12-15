@@ -21,6 +21,10 @@ export default function FileClaim() {
       <h1 style={{color:"#7c3aed", fontSize:"28px", marginBottom:"10px"}}>
         Claim Assistant 📁
       </h1>
+       <p className="page-desc">
+      Submit claim details and upload required documents for faster processing
+    </p>
+
       <p style={{marginBottom:"30px", opacity:0.8}}>
         Submit Insurance Claim Documents & Reason
       </p>
