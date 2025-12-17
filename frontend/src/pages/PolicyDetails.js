@@ -16,7 +16,7 @@ export default function PolicyDetails() {
   if (!policy) return <div style={{textAlign:"center", marginTop:40}}>Loading...</div>;
 
   return (
-    <div style={{padding:28, maxWidth:800, margin:"0 auto"}}>
+    <div style={{padding:28, maxWidth:800, margin:"10 auto"}}>
       <button className="btn-outline" onClick={()=>navigate(-1)}>Back</button>
       <h2 style={{color:"#6C63FF", marginTop:12}}>{policy.name}</h2>
       <p><b>Provider:</b> {policy.provider?.name ?? policy.provider_id}</p>

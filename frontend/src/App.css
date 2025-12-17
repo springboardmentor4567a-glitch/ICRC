@@ -6,12 +6,20 @@ body {
   color: #fff;
 }
 
+/* ================= HEADINGS ================= */
 .page-title {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 12px;
   color: #6C63FF;
   font-weight: 700;
   font-size: 28px;
+}
+
+.page-desc {
+  text-align: center;
+  font-size: 15px;
+  color: #c7c7ff;
+  margin-bottom: 30px;
 }
 
 /* ================= BUTTONS ================= */
@@ -19,86 +27,205 @@ body {
   background: linear-gradient(90deg, #6C63FF, #C77DFF);
   color: white;
   border: none;
-  padding: 10px 14px;
+  padding: 12px 18px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
   transition: 0.25s ease;
 }
 .btn-purple:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 18px rgba(108, 99, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108,99,255,0.5);
+}
+.btn-purple.full {
+  width: 100%;
 }
 
-.btn-outline {
-  background: transparent;
-  border: 1px solid #ccc;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: white;
-}
 
-/* ================= AUTH FORMS ================= */
+/* ================================================= */
+/* ================= AUTH PAGES ==================== */
+/* ================================================= */
+
 .center-box {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
 }
 
 .form-card {
   width: 380px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 15px;
-  padding: 35px;
-  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 36px;
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 0 18px rgba(155,0,255,0.4);
+  box-shadow: 0 20px 50px rgba(108,99,255,0.45);
 }
 
 .form-card h2 {
   text-align: center;
-  margin-bottom: 25px;
-  color: #b84fff;
+  margin-bottom: 24px;
+  color: #c77dff;
 }
 
 .input-box {
   width: 100%;
   padding: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   border-radius: 8px;
   background: rgba(255,255,255,0.15);
   border: none;
   color: white;
   outline: none;
+  font-size: 14px;
+  display: block; /* IMPORTANT */
 }
 
-/* ================= DASHBOARD ================= */
-.dash-btn {
-  background: #6C63FF;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 17px;
+.input-box::placeholder {
+  color: #ddd;
+}
+
+.form-actions {
+  margin-top: 20px;
+}
+
+.form-actions button {
+  width: 100%;
+}
+
+.msg-error {
+  color: #ff6b6b;
   font-weight: 600;
-  transition: 0.3s;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
-.dash-btn:hover {
-  background: #5A52D4;
-  transform: scale(1.05);
+/* ================================================= */
+/* ================= CALCULATOR ==================== */
+/* ================================================= */
+
+.calculator-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 40px;
+  align-items: start;
 }
 
+.calc-card {
+  background: white;
+  padding: 26px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 12px 30px rgba(108,99,255,0.25);
+}
+
+.calc-card label {
+  font-size: 14px;
+  color: #333;
+}
+
+.calc-input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #c7c7c7;
+  font-size: 14px;
+  background: #f9f9ff;
+  display: block;
+}
+
+/* ===== Premium Quote ===== */
+.premium-quote-card {
+  width: 360px;
+  padding: 26px;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(108,99,255,0.25),
+    rgba(199,125,255,0.25)
+  );
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 25px 60px rgba(108,99,255,0.45);
+}
+
+.quote-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quote-header h3 {
+  margin: 0;
+  color: #e6dcff;
+}
+
+.risk-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.risk-pill.low { background: #22c55e; color: #000; }
+.risk-pill.medium { background: #facc15; color: #000; }
+.risk-pill.high { background: #ef4444; }
+
+.quote-main {
+  font-size: 40px;
+  font-weight: 800;
+  text-align: center;
+  margin: 18px 0 6px;
+}
+.quote-main span {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.quote-sub {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.quote-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.25);
+  margin: 16px 0;
+}
+
+.quote-breakdown p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.quote-total {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(90deg,#6C63FF,#C77DFF);
+  text-align: center;
+  font-weight: 700;
+}
+.quote-total div {
+  font-size: 22px;
+  margin-top: 4px;
+}
+
+/* ================================================= */
 /* ================= POLICY CARDS ================= */
+/* ================================================= */
+
 .policy-card {
   background: rgba(255,255,255,0.96);
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 14px 40px rgba(180, 126, 205, 0.777);
   transition: all 0.35s ease;
   display: flex;
   flex-direction: column;
@@ -107,104 +234,78 @@ body {
 }
 
 .policy-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 18px 45px rgba(108,99,255,0.35);
+  transform: translateY(-10px);
+  box-shadow: 0 22px 55px rgba(108,99,255,0.45);
 }
 
 .policy-card.selected {
-  border-color: #6C63FF;
-  box-shadow: 0 0 0 2px rgba(108,99,255,0.25),
-              0 20px 45px rgba(108,99,255,0.45);
+  border: 2px solid #6C63FF;
 }
 
-/* Cheapest badge */
 .cheapest-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 14px;
   background: linear-gradient(90deg, #6C63FF, #C77DFF);
   color: white;
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
-/* Policy text */
 .policy-card h3 {
   font-size: 20px;
-  font-weight: 700;
   color: #3b2fc9;
-  margin-bottom: 6px;
 }
 
 .provider-name {
   font-size: 13px;
-  color: #514e4e;
+  color: #555;
 }
 
 .policy-info p {
   margin: 6px 0;
   color: #333;
-  font-size: 14px;
 }
 
 .policy-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: rgb(72, 70, 70);
-  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color:#484343
 }
 
 .policy-benefits {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #444;
-  background: lightgrey;
+  background: rgb(199, 210, 214);
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-size: 13px;
+  color:black;
 }
 
-/* Card footer */
 .policy-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
-.compare-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  color: #333;
-}
-
-
-/* ================= WARNINGS ================= */
-.compare-warning {
-  text-align: center;
-  color: #eab308;
-  font-weight: 600;
-  margin-bottom: 14px;
-}
-
-/* ================= STICKY COMPARE BAR ================= */
+/* Sticky Compare Bar */
 .compare-bar {
   position: sticky;
   bottom: 20px;
   margin-top: 30px;
   background: linear-gradient(90deg, #6C63FF, #C77DFF);
-  padding: 14px 20px;
-  border-radius: 14px;
+  padding: 16px 22px;
+  border-radius: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
-  box-shadow: 0 10px 30px rgba(108, 99, 255, 0.35);
+  box-shadow: 0 12px 35px rgba(108,99,255,0.45);
+}
+.compare-check {
+color:#000
 }
 
 /* ================= COMPARE TABLE ================= */
@@ -212,8 +313,8 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   background: white;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 18px;
+  padding: 24px;
 }
 
 .compare-table {
@@ -223,82 +324,19 @@ body {
 }
 
 .compare-table th {
-  background: #f3f0ff;
-  color: #4c1d95;
+  background: linear-gradient(90deg,#6C63FF,#C77DFF);
+  color: white;
   padding: 14px;
-  font-weight: 700;
-  text-align: left;
 }
 
 .compare-table td {
   padding: 14px;
   border-bottom: 1px solid #eee;
-  font-size: 15px;
 }
 
-/* ================= CALCULATOR ================= */
-.calc-card {
-  width: 380px;
-  margin: 0 auto;
-  background:white;
-  padding: 25px;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.calc-input {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #bfbfbf;
-  background: #f9f9ff;
-  font-size: 15px;
-}
-
-.result-text {
-  margin-top: 15px;
-  padding: 10px;
-  text-align: center;
-  background: #e9e4ff;
-  color: #6C63FF;
-  border-radius: 8px;
-  font-weight: bold;
-}
-
-/* ================= MESSAGES ================= */
-.msg-error {
-  color: red;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.msg-success {
-  color: #22c55e;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-.form-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-
-.form-actions button {
-  width: 160px;
-}
-.page-desc {
-  text-align: center;
-  font-size: 15px;
-  color: #c7c7ff;
-  margin-bottom: 20px;
-}
-
-
-/* ================= ANIMATION ================= */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ================= MOBILE ================= */
+@media (max-width: 900px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
+  }
 }
