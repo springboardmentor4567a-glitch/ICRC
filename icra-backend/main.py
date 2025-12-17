@@ -234,3 +234,20 @@ def get_my_policies(user: models.User = Depends(get_current_user), db: Session =
     # Fetch all policies owned by the current user
     purchases = db.query(models.UserPolicy).filter(models.UserPolicy.user_id == user.id).all()
     return purchases
+
+# ==========================
+# --- USER PROFILE ENDPOINTS ---
+# ==========================
+
+@app.put("/user/profile", response_model=schemas.UserResponse)
+def update_risk_profile(
+    profile_data: schemas.RiskProfileUpdate,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    # Convert Pydantic model to JSON-compatible dict
+    user.risk_profile = profile_data.dict()
+    
+    db.commit()
+    db.refresh(user)
+    return user

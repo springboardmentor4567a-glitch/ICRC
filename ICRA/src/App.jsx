@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import LoginPage from './LoginPage';
 import Dashboard from './Dashboard';
 import Calculators from './Calculators';
-import FindInsurance from './FindInsurance'; // New Page
-import MyPolicies from './MyPolicies';       // New Page
+import FindInsurance from './FindInsurance';
+import MyPolicies from './MyPolicies';
+import RiskProfile from './RiskProfile'; // <-- IMPORT THIS
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // Navigation State
+  const [currentView, setCurrentView] = useState('dashboard');
 
   // --- CHECK FOR SAVED SESSION ON LOAD ---
   useEffect(() => {
@@ -22,7 +23,7 @@ function App() {
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
-    setCurrentView('dashboard'); // Reset view on login
+    setCurrentView('dashboard');
   };
 
   const handleLogout = () => {
@@ -30,7 +31,7 @@ function App() {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
     setUser(null);
-    setCurrentView('dashboard'); // Reset view on logout
+    setCurrentView('dashboard');
   };
 
   if (loading) {
@@ -64,6 +65,13 @@ function App() {
           {currentView === 'my-policies' && (
             <MyPolicies
               onBack={() => setCurrentView('dashboard')}
+            />
+          )}
+          {/* NEW ROUTE ADDED HERE */}
+          {currentView === 'risk-profile' && (
+            <RiskProfile
+              onBack={() => setCurrentView('dashboard')}
+              onComplete={() => setCurrentView('dashboard')}
             />
           )}
         </>

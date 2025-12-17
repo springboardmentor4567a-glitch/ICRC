@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
@@ -13,7 +13,9 @@ class User(Base):
     password = Column(String)
     dob = Column(Date)
     
-    # Relationship: One User has Many Policies
+    # NEW: Store all risk answers (Income, Health, etc.) here
+    risk_profile = Column(JSON, nullable=True) 
+    
     policies = relationship("UserPolicy", back_populates="user")
 
 # 2. Policy Table
@@ -21,7 +23,7 @@ class Policy(Base):
     __tablename__ = "policies"
 
     id = Column(Integer, primary_key=True, index=True)
-    category = Column(String, index=True)      # e.g., "Health", "Auto"
+    category = Column(String, index=True)
     policy_name = Column(String, index=True)
     provider = Column(String, index=True)
     premium = Column(Integer)
@@ -29,7 +31,7 @@ class Policy(Base):
     description = Column(Text)
     features = Column(Text)
 
-# 3. UserPolicy Table (The Link / Purchase Record)
+# 3. UserPolicy Table
 class UserPolicy(Base):
     __tablename__ = "userpolicies"
 
@@ -37,7 +39,7 @@ class UserPolicy(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     policy_id = Column(Integer, ForeignKey("policies.id"))
     purchase_date = Column(Date, default=datetime.date.today)
-    status = Column(String, default="Active") # Active, Expired
+    status = Column(String, default="Active")
 
     user = relationship("User", back_populates="policies")
     policy = relationship("Policy")

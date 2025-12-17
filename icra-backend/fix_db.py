@@ -1,8 +1,12 @@
+# fix_db.py
 from database import engine
 from sqlalchemy import text
 
-# The 'CASCADE' keyword forces the deletion even if other tables link to it
 with engine.connect() as connection:
+    # Drop policies (old fix)
     connection.execute(text("DROP TABLE IF EXISTS policies CASCADE"))
+    # NEW: Drop users to reset schema for new column
+    connection.execute(text("DROP TABLE IF EXISTS users CASCADE"))
+    connection.execute(text("DROP TABLE IF EXISTS userpolicies CASCADE"))
     connection.commit()
-    print("✅ Broken 'policies' table deleted successfully.")
+    print("✅ All tables dropped. Restart backend to recreate with new Schema.")

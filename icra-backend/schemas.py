@@ -1,10 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import date
-from typing import Optional, List
-from fastapi.security import OAuth2PasswordBearer
-
-# This is required for get_current_user to work
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+from typing import Optional, Dict, Any
 
 # --- USER SCHEMAS ---
 class UserBase(BaseModel):
@@ -22,9 +18,22 @@ class UserLogin(UserBase):
 class EmailRequest(BaseModel):
     email: EmailStr
 
+# NEW: Schema for Risk Profile Data
+class RiskProfileUpdate(BaseModel):
+    marital_status: str
+    dependents: int
+    annual_income: int
+    debt: int
+    health_conditions: list[str] = []
+    smoker: bool
+    vehicle_type: str = "None"
+    own_house: bool
+
 class UserResponse(UserBase):
     id: int
     name: str
+    # NEW: Return the profile so frontend knows if it's filled
+    risk_profile: Optional[Dict[str, Any]] = None
     message: str = "Success"
     class Config:
         from_attributes = True
@@ -45,20 +54,15 @@ class PolicyBase(BaseModel):
     description: str
     features: str
 
-class PolicyCreate(PolicyBase):
-    pass
-
 class PolicyResponse(PolicyBase):
     id: int
     class Config:
         from_attributes = True
 
-# --- MY POLICY SCHEMA (New for My Policies Page) ---
 class MyPolicyResponse(BaseModel):
     id: int
     purchase_date: date
     status: str
-    policy: PolicyResponse # Nested policy details
-    
+    policy: PolicyResponse
     class Config:
         from_attributes = True
