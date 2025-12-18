@@ -1,45 +1,54 @@
-from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, JSON
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON, DateTime, func
 from sqlalchemy.orm import relationship
 from database import Base
-import datetime
 
-# 1. User Table
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
+    name = Column(String)
     password = Column(String)
-    dob = Column(Date)
-    
-    # NEW: Store all risk answers (Income, Health, etc.) here
-    risk_profile = Column(JSON, nullable=True) 
-    
-    policies = relationship("UserPolicy", back_populates="user")
+    dob = Column(DateTime)
+    risk_profile = Column(JSON, default={}) # Stores: {income, smoker, vehicle, etc}
 
-# 2. Policy Table
+    # Relationships
+    policies = relationship("UserPolicy", back_populates="user")
+    recommendations = relationship("Recommendation", back_populates="user")
+
 class Policy(Base):
     __tablename__ = "policies"
 
     id = Column(Integer, primary_key=True, index=True)
-    category = Column(String, index=True)
-    policy_name = Column(String, index=True)
-    provider = Column(String, index=True)
+    category = Column(String) # Health, Life, Auto, etc.
+    provider = Column(String)
+    policy_name = Column(String)
     premium = Column(Integer)
     cover_amount = Column(Integer)
-    description = Column(Text)
-    features = Column(Text)
+    description = Column(String)
+    features = Column(String) # Stored as "Feature1;Feature2;Feature3"
 
-# 3. UserPolicy Table
 class UserPolicy(Base):
-    __tablename__ = "userpolicies"
+    __tablename__ = "user_policies"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     policy_id = Column(Integer, ForeignKey("policies.id"))
-    purchase_date = Column(Date, default=datetime.date.today)
+    purchase_date = Column(DateTime, default=func.now())
     status = Column(String, default="Active")
 
     user = relationship("User", back_populates="policies")
+    policy = relationship("Policy")
+
+# --- THIS IS THE MISSING PART CAUSING THE ERROR ---
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    policy_id = Column(Integer, ForeignKey("policies.id"))
+    score = Column(Integer)
+    reason = Column(String)
+
+    user = relationship("User", back_populates="recommendations")
     policy = relationship("Policy")

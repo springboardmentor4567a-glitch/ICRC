@@ -1,218 +1,220 @@
-import React, { useState } from 'react';
-import { ArrowLeft, CheckCircle, ChevronRight, Activity, DollarSign, Home, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Save, Shield, DollarSign, Activity, Home, AlertCircle, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 
 const RiskProfile = ({ onBack, onComplete }) => {
-    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [step, setStep] = useState(1); // 1: Health, 2: Finance, 3: Assets
 
-    // --- FORM STATE ---
     const [formData, setFormData] = useState({
-        marital_status: "Single",
-        dependents: 0,
-        annual_income: "",
-        debt: 0,
-        health_conditions: [],
-        smoker: false,
-        vehicle_type: "None",
-        own_house: false
+        // 1. HEALTH
+        age: '', height: '', weight: '', smoker: false, alcohol: 'None', medical_history: [],
+        // 2. FINANCE
+        occupation: 'Salaried', annual_income: '', dependents: '', existing_loans: '', retirement_age: '',
+        // 3. ASSETS
+        vehicle_type: 'None', vehicle_age: '0', home_ownership: 'Rented', top_priority: 'Low Premium',
     });
 
-    // --- OPTIONS ---
-    const healthOptions = ["Diabetes", "Hypertension", "Asthma", "Heart Condition", "None"];
+    useEffect(() => {
+        const loadProfile = async () => {
+            const token = localStorage.getItem('access_token');
+            try {
+                const res = await fetch('http://127.0.0.1:8000/user/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.risk_profile) setFormData(prev => ({ ...prev, ...data.risk_profile }));
+                }
+            } catch (err) { console.error("Failed to load", err); }
+        };
+        loadProfile();
+    }, []);
 
-    // --- HANDLERS ---
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
-    const handleHealthChange = (condition) => {
-        let current = [...formData.health_conditions];
-        if (current.includes(condition)) {
-            current = current.filter(c => c !== condition);
-        } else {
-            if (condition === "None") current = ["None"];
-            else {
-                current = current.filter(c => c !== "None");
-                current.push(condition);
-            }
-        }
-        setFormData({ ...formData, health_conditions: current });
+    const toggleCondition = (condition) => {
+        setFormData(prev => {
+            const current = Array.isArray(prev.medical_history) ? prev.medical_history : [];
+            return current.includes(condition) ? { ...prev, medical_history: current.filter(c => c !== condition) } : { ...prev, medical_history: [...current, condition] };
+        });
     };
 
-    // --- SUBMIT LOGIC ---
     const handleSubmit = async () => {
         setLoading(true);
         const token = localStorage.getItem('access_token');
-
         try {
             const res = await fetch('http://127.0.0.1:8000/user/profile', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    dependents: Number(formData.dependents),
-                    annual_income: Number(formData.annual_income),
-                    debt: Number(formData.debt)
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(formData)
             });
-
             if (res.ok) {
-                alert("Profile Updated Successfully!");
-                onComplete(); // Go back to dashboard or next step
-            } else {
-                alert("Failed to update profile.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Network Error");
-        } finally {
-            setLoading(false);
-        }
+                await fetch('http://127.0.0.1:8000/recommendations', { headers: { 'Authorization': `Bearer ${token}` } });
+                onComplete();
+            } else { alert("Failed to save."); }
+        } catch (err) { alert("Error saving."); } finally { setLoading(false); }
     };
 
-    // --- RENDER STEPS ---
-    const renderStep = () => {
-        switch (step) {
-            case 1:
-                return (
-                    <div className="animate-fade-in space-y-6">
-                        <h3 className="text-xl font-bold text-slate-700 flex items-center gap-2"><User size={24} className="text-blue-600" /> Personal Details</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-2">Marital Status</label>
-                            <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full p-3 border rounded-lg bg-white">
-                                <option>Single</option>
-                                <option>Married</option>
-                                <option>Divorced</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-2">Number of Dependents (Children/Parents)</label>
-                            <input type="number" name="dependents" value={formData.dependents} onChange={handleChange} className="w-full p-3 border rounded-lg" min="0" />
-                        </div>
-                    </div>
-                );
-            case 2:
-                return (
-                    <div className="animate-fade-in space-y-6">
-                        <h3 className="text-xl font-bold text-slate-700 flex items-center gap-2"><DollarSign size={24} className="text-green-600" /> Financial Status</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-2">Annual Income (₹)</label>
-                            <input type="number" name="annual_income" value={formData.annual_income} onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="e.g. 1000000" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-2">Total Outstanding Debt (Loans/EMIs)</label>
-                            <input type="number" name="debt" value={formData.debt} onChange={handleChange} className="w-full p-3 border rounded-lg" placeholder="e.g. 500000" />
-                        </div>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="animate-fade-in space-y-6">
-                        <h3 className="text-xl font-bold text-slate-700 flex items-center gap-2"><Activity size={24} className="text-red-600" /> Health Profile</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-3">Do you have any pre-existing conditions?</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {healthOptions.map(opt => (
-                                    <div key={opt} onClick={() => handleHealthChange(opt)}
-                                        className={`p-3 rounded-lg border cursor-pointer flex items-center gap-2 transition-all ${formData.health_conditions.includes(opt) ? 'bg-red-50 border-red-500 text-red-700 font-bold' : 'hover:bg-slate-50'}`}>
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.health_conditions.includes(opt) ? 'bg-red-500 border-red-500' : 'border-slate-300'}`}>
-                                            {formData.health_conditions.includes(opt) && <CheckCircle size={14} className="text-white" />}
-                                        </div>
-                                        {opt}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                            <input type="checkbox" name="smoker" checked={formData.smoker} onChange={handleChange} className="w-5 h-5 accent-red-600" />
-                            <label className="text-slate-700 font-medium">I am a smoker / consumer of tobacco products</label>
-                        </div>
-                    </div>
-                );
-            case 4:
-                return (
-                    <div className="animate-fade-in space-y-6">
-                        <h3 className="text-xl font-bold text-slate-700 flex items-center gap-2"><Home size={24} className="text-purple-600" /> Assets & Lifestyle</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-2">Do you own a vehicle?</label>
-                            <select name="vehicle_type" value={formData.vehicle_type} onChange={handleChange} className="w-full p-3 border rounded-lg bg-white">
-                                <option value="None">No Vehicle</option>
-                                <option value="Two Wheeler">Two Wheeler (Bike/Scooter)</option>
-                                <option value="Four Wheeler">Four Wheeler (Car)</option>
-                                <option value="Both">Both</option>
-                            </select>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                            <input type="checkbox" name="own_house" checked={formData.own_house} onChange={handleChange} className="w-5 h-5 accent-purple-600" />
-                            <label className="text-slate-700 font-medium">I own a house / apartment</label>
-                        </div>
-                    </div>
-                );
-            default: return null;
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-slate-50 font-sans pb-24">
-            {/* HEADER - Updated to match Dashboard/FindInsurance alignment */}
-            <div className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-30 shadow-sm">
-                <div className="max-w-6xl mx-auto flex items-center gap-3">
-                    <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
-                        <ArrowLeft size={24} />
-                    </button>
-                    <span className="text-xl font-bold text-slate-800 tracking-tight">Complete Risk Profile</span>
+    // --- STEPS UI ---
+    const renderStep1 = () => (
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Age</label><input type="number" name="age" value={formData.age} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all" placeholder="e.g. 30" /></div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Height (cm)</label><input type="number" name="height" value={formData.height} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none" placeholder="175" /></div>
+                    <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Weight (kg)</label><input type="number" name="weight" value={formData.weight} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none" placeholder="70" /></div>
                 </div>
             </div>
 
-            {/* PROGRESS BAR */}
-            <div className="max-w-2xl mx-auto mt-8 px-6">
-                <div className="flex justify-between mb-2">
-                    {['Personal', 'Financial', 'Health', 'Assets'].map((label, idx) => (
-                        <span key={idx} className={`text-xs font-bold uppercase tracking-wider ${step > idx ? 'text-blue-600' : step === idx + 1 ? 'text-blue-600' : 'text-slate-300'}`}>{label}</span>
+            <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Lifestyle & Habits</label>
+                <div className="flex flex-col md:flex-row gap-4">
+                    <select name="alcohol" value={formData.alcohol} onChange={handleChange} className="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none">
+                        <option value="None">Alcohol: None</option>
+                        <option value="Social">Alcohol: Social</option>
+                        <option value="Regular">Alcohol: Regular</option>
+                    </select>
+                    <div onClick={() => setFormData({ ...formData, smoker: !formData.smoker })} className={`flex-1 p-4 border rounded-xl flex items-center gap-3 cursor-pointer transition-all ${formData.smoker ? 'bg-red-50 border-red-300 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.smoker ? 'bg-red-600 border-red-600' : 'bg-white border-slate-300'}`}>{formData.smoker && <Check size={12} className="text-white" />}</div>
+                        <span className="font-medium">I smoke / use tobacco</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Medical History</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {['Diabetes', 'Hypertension', 'Asthma', 'Thyroid', 'Heart Condition', 'None'].map(cond => (
+                        <button key={cond} onClick={() => toggleCondition(cond)} className={`p-3 rounded-xl text-sm font-bold border transition-all ${(formData.medical_history || []).includes(cond) ? 'bg-red-100 border-red-300 text-red-800 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>{cond}</button>
                     ))}
                 </div>
-                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${(step / 4) * 100}%` }}></div>
+            </div>
+        </div>
+    );
+
+    const renderStep2 = () => (
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Occupation</label>
+                    <select name="occupation" value={formData.occupation} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="Salaried">Salaried (Office)</option>
+                        <option value="Business">Business Owner</option>
+                        <option value="Student">Student</option>
+                        <option value="Retired">Retired</option>
+                        <option value="Hazardous">Hazardous (Factory/Mining)</option>
+                    </select>
+                </div>
+                <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Annual Income (₹)</label><input type="number" name="annual_income" value={formData.annual_income} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. 1200000" /></div>
+                <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Current Debt / Loans (₹)</label><input type="number" name="existing_loans" value={formData.existing_loans} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none" placeholder="Total loan amount" /></div>
+                <div><label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Dependents</label><input type="number" name="dependents" value={formData.dependents} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none" placeholder="No. of people relying on you" /></div>
+            </div>
+        </div>
+    );
+
+    const renderStep3 = () => (
+        <div className="space-y-6 animate-fade-in">
+            <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Vehicle Details</label>
+                <div className="flex gap-4 mb-4">
+                    {['None', 'Car', 'Bike'].map(v => (
+                        <button key={v} onClick={() => setFormData({ ...formData, vehicle_type: v })} className={`flex-1 p-4 rounded-xl font-bold border transition-all ${formData.vehicle_type === v ? 'bg-blue-100 border-blue-300 text-blue-800 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>{v}</button>
+                    ))}
+                </div>
+                {formData.vehicle_type !== 'None' && (
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Vehicle Age (Years)</label>
+                        <input type="number" name="vehicle_age" value={formData.vehicle_age} onChange={handleChange} className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    </div>
+                )}
+            </div>
+
+            <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Home Ownership</label>
+                <div className="flex gap-4">
+                    {['Owned', 'Rented'].map(h => (
+                        <button key={h} onClick={() => setFormData({ ...formData, home_ownership: h })} className={`flex-1 p-4 rounded-xl font-bold border flex items-center justify-center gap-2 transition-all ${formData.home_ownership === h ? 'bg-purple-100 border-purple-300 text-purple-800 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                            <Home size={18} /> {h}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* CARD */}
-            <div className="max-w-2xl mx-auto mt-8 p-8 bg-white rounded-2xl shadow-sm border border-slate-200">
-                {renderStep()}
+            <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Primary Goal</label>
+                <select name="top_priority" value={formData.top_priority} onChange={handleChange} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                    <option value="Low Premium">💰 I want the Lowest Premium</option>
+                    <option value="Max Cover">🛡️ I want Maximum Coverage</option>
+                    <option value="Tax Saving">📉 I want Tax Saving</option>
+                </select>
+            </div>
+        </div>
+    );
 
-                <div className="mt-8 flex justify-between pt-6 border-t border-slate-100">
+    return (
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+
+            {/* CARD CONTAINER */}
+            <div className="bg-white w-full max-w-2xl rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+
+                {/* HEADER & PROGRESS */}
+                <div className="bg-white p-8 border-b border-slate-100 relative">
+                    <button onClick={onBack} className="absolute top-8 left-8 text-slate-400 hover:text-slate-600 transition-colors"><ArrowLeft size={24} /></button>
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-slate-800 mb-2">Build Your Risk Profile</h1>
+                        <p className="text-slate-500 text-sm">Step {step} of 3</p>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
+                        <div className={`h-full transition-all duration-500 ease-out rounded-full ${step === 1 ? 'w-1/3 bg-red-500' : step === 2 ? 'w-2/3 bg-green-500' : 'w-full bg-blue-500'}`}></div>
+                    </div>
+                </div>
+
+                {/* STEP CONTENT */}
+                <div className="p-8 min-h-[400px]">
+                    {step === 1 && (
+                        <div>
+                            <div className="flex items-center gap-3 mb-6 text-red-600 bg-red-50 p-3 rounded-xl w-fit"><Activity size={20} /><span className="font-bold">Health & Lifestyle</span></div>
+                            {renderStep1()}
+                        </div>
+                    )}
+                    {step === 2 && (
+                        <div>
+                            <div className="flex items-center gap-3 mb-6 text-green-600 bg-green-50 p-3 rounded-xl w-fit"><DollarSign size={20} /><span className="font-bold">Financial & Career</span></div>
+                            {renderStep2()}
+                        </div>
+                    )}
+                    {step === 3 && (
+                        <div>
+                            <div className="flex items-center gap-3 mb-6 text-blue-600 bg-blue-50 p-3 rounded-xl w-fit"><Shield size={20} /><span className="font-bold">Assets & Goals</span></div>
+                            {renderStep3()}
+                        </div>
+                    )}
+                </div>
+
+                {/* FOOTER NAVIGATION */}
+                <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                     <button
                         onClick={() => setStep(s => Math.max(1, s - 1))}
                         disabled={step === 1}
-                        className="px-6 py-2 text-slate-500 font-bold disabled:opacity-30 hover:bg-slate-50 rounded-lg transition-colors"
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}
                     >
-                        Back
+                        <ChevronLeft size={20} /> Back
                     </button>
 
-                    {step < 4 ? (
-                        <button
-                            onClick={() => setStep(s => Math.min(4, s + 1))}
-                            className="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-200"
-                        >
-                            Next <ChevronRight size={18} />
+                    {step < 3 ? (
+                        <button onClick={() => setStep(s => s + 1)} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-slate-800 transition-all flex items-center gap-2">
+                            Next Step <ChevronRight size={20} />
                         </button>
                     ) : (
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="bg-green-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-green-700 flex items-center gap-2 shadow-lg shadow-green-200"
-                        >
-                            {loading ? "Saving..." : "Finish Profile"} <CheckCircle size={18} />
+                        <button onClick={handleSubmit} disabled={loading} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-2">
+                            {loading ? "Analyzing..." : "Finish & Analyze"} <Check size={20} />
                         </button>
                     )}
                 </div>
+
             </div>
         </div>
     );

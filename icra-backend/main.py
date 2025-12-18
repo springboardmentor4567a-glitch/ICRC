@@ -1,3 +1,4 @@
+from sqlalchemy.orm import joinedload
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -6,6 +7,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from typing import List, Optional
 import models, schemas, database
+import recommendations
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -183,6 +185,37 @@ def login(user: schemas.UserLogin, db: Session = Depends(database.get_db)):
         "user": db_user
     }
 
+@app.post("/auth/refresh", response_model=schemas.Token)
+def refresh_token(request: schemas.RefreshTokenRequest, db: Session = Depends(database.get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate refresh token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    try:
+        payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user is None:
+        raise credentials_exception
+    
+    # Generate new tokens
+    access_token = create_token(data={"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    new_refresh_token = create_token(data={"sub": user.email}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": new_refresh_token,
+        "token_type": "bearer",
+        "user": user
+    }
+
 # ==========================
 # --- POLICY ENDPOINTS ---
 # ==========================
@@ -231,9 +264,27 @@ def buy_policy(policy_id: int, user: models.User = Depends(get_current_user), db
 
 @app.get("/my-policies", response_model=List[schemas.MyPolicyResponse])
 def get_my_policies(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # Fetch all policies owned by the current user
-    purchases = db.query(models.UserPolicy).filter(models.UserPolicy.user_id == user.id).all()
+    # Use joinedload to fetch the Policy details along with the purchase record
+    purchases = db.query(models.UserPolicy)\
+                  .options(joinedload(models.UserPolicy.policy))\
+                  .filter(models.UserPolicy.user_id == user.id)\
+                  .all()
     return purchases
+
+@app.delete("/my-policies/{purchase_id}")
+def delete_policy(purchase_id: int, user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    # Find the purchase record (UserPolicy row)
+    policy_entry = db.query(models.UserPolicy).filter(
+        models.UserPolicy.id == purchase_id,
+        models.UserPolicy.user_id == user.id
+    ).first()
+    
+    if not policy_entry:
+        raise HTTPException(status_code=404, detail="Policy purchase not found")
+        
+    db.delete(policy_entry)
+    db.commit()
+    return {"message": "Policy removed from your portfolio"}
 
 # ==========================
 # --- USER PROFILE ENDPOINTS ---
@@ -251,3 +302,25 @@ def update_risk_profile(
     db.commit()
     db.refresh(user)
     return user
+
+@app.get("/recommendations")
+def get_recommendations(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    # 1. Run the engine
+    recommendations.generate_recommendations(user.id, db)
+
+    # 2. Fetch results
+    recs = db.query(models.Recommendation)\
+             .filter(models.Recommendation.user_id == user.id)\
+             .order_by(models.Recommendation.score.desc())\
+             .all()
+
+    # 3. Format response
+    results = []
+    for rec in recs:
+        results.append({
+            "score": rec.score,
+            "reason": rec.reason,
+            "policy": rec.policy 
+        })
+
+    return results

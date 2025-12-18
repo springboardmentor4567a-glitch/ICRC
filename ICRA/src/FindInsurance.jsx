@@ -15,7 +15,7 @@ import {
     Layers
 } from 'lucide-react';
 
-const FindInsurance = ({ onBack }) => {
+const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
     // --- STATES ---
     const [policies, setPolicies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,7 +46,9 @@ const FindInsurance = ({ onBack }) => {
 
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
-                setSelectedPolicy(null);
+                if (selectedPolicy) {
+                    handleCloseModal();
+                }
                 setShowCompare(false);
                 setShowFilters(false);
             }
@@ -118,7 +120,22 @@ const FindInsurance = ({ onBack }) => {
         fetchPolicies();
     }, []);
 
+    // --- AUTO-OPEN MODAL LOGIC ---
+    useEffect(() => {
+        if (autoOpenPolicyId && policies.length > 0) {
+            const policyToOpen = policies.find(p => p.id === autoOpenPolicyId);
+            if (policyToOpen) {
+                setSelectedPolicy(policyToOpen);
+            }
+        }
+    }, [autoOpenPolicyId, policies]);
+
     // --- HANDLERS ---
+    const handleCloseModal = () => {
+        setSelectedPolicy(null);
+        if (onModalClosed) onModalClosed();
+    };
+
     const handleBuy = async (e, policyId) => {
         e.stopPropagation();
         setBuyingId(policyId);
@@ -138,7 +155,7 @@ const FindInsurance = ({ onBack }) => {
             const data = await res.json();
             if (res.ok) {
                 alert(data.message);
-                setSelectedPolicy(null);
+                handleCloseModal();
             } else {
                 alert(data.detail || "Purchase failed.");
             }
@@ -354,7 +371,7 @@ const FindInsurance = ({ onBack }) => {
                     <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl animate-fade-in relative flex flex-col overflow-hidden">
 
                         {/* Close Button */}
-                        <button onClick={() => setSelectedPolicy(null)} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-10"><X size={20} /></button>
+                        <button onClick={handleCloseModal} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-10"><X size={20} /></button>
 
                         {/* Header: Flex Shrink 0 (Always Visible) */}
                         <div className="p-8 border-b border-slate-100 bg-slate-50 flex-shrink-0">

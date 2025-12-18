@@ -4,12 +4,16 @@ import Dashboard from './Dashboard';
 import Calculators from './Calculators';
 import FindInsurance from './FindInsurance';
 import MyPolicies from './MyPolicies';
-import RiskProfile from './RiskProfile'; // <-- IMPORT THIS
+import RiskProfile from './RiskProfile';
+import Profile from './Profile'; // <--- NEW IMPORT
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
+
+  // --- STATE TO TRACK AUTO-OPEN POLICY ---
+  const [autoOpenPolicyId, setAutoOpenPolicyId] = useState(null);
 
   // --- CHECK FOR SAVED SESSION ON LOAD ---
   useEffect(() => {
@@ -34,6 +38,14 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  // --- NAVIGATION HANDLER ---
+  const handleNavigate = (view, policyId = null) => {
+    setCurrentView(view);
+    if (policyId) {
+      setAutoOpenPolicyId(policyId);
+    }
+  };
+
   if (loading) {
     return <div className="h-screen w-full flex items-center justify-center bg-slate-50">Loading...</div>;
   }
@@ -49,7 +61,7 @@ function App() {
             <Dashboard
               user={user}
               onLogout={handleLogout}
-              onNavigate={(view) => setCurrentView(view)}
+              onNavigate={handleNavigate}
             />
           )}
           {currentView === 'calculators' && (
@@ -60,6 +72,8 @@ function App() {
           {currentView === 'find-insurance' && (
             <FindInsurance
               onBack={() => setCurrentView('dashboard')}
+              autoOpenPolicyId={autoOpenPolicyId}
+              onModalClosed={() => setAutoOpenPolicyId(null)}
             />
           )}
           {currentView === 'my-policies' && (
@@ -67,11 +81,18 @@ function App() {
               onBack={() => setCurrentView('dashboard')}
             />
           )}
-          {/* NEW ROUTE ADDED HERE */}
           {currentView === 'risk-profile' && (
             <RiskProfile
               onBack={() => setCurrentView('dashboard')}
               onComplete={() => setCurrentView('dashboard')}
+            />
+          )}
+          {/* NEW PROFILE ROUTE */}
+          {currentView === 'profile' && (
+            <Profile
+              user={user}
+              onBack={() => setCurrentView('dashboard')}
+              onLogout={handleLogout}
             />
           )}
         </>
