@@ -1,11 +1,18 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
 
-# Your password '0204' is already set here
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:0204@localhost/icra_db"
+# Load secrets from .env file
+load_dotenv()
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# Use the secure variable
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./icra.db")
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

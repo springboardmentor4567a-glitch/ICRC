@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional, List
 from datetime import datetime
+import re
 
 # --- PROFILE SCHEMA ---
 class RiskProfileUpdate(BaseModel):
@@ -42,6 +43,22 @@ class UserCreate(BaseModel):
     dob: Optional[datetime] = None
     otp: Optional[str] = None
 
+    # --- SANITIZATION ---
+    @validator('name')
+    def sanitize_name(cls, v):
+        # Remove any HTML tags or script injections
+        if '<script>' in v or '</script>' in v:
+            raise ValueError('Invalid characters in name')
+        return v.strip()
+
+    @validator('email')
+    def validate_email_format(cls, v):
+        # Basic Email Regex
+        regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        if not re.search(regex, v, re.IGNORECASE):
+            raise ValueError('Invalid email format')
+        return v
+
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -77,6 +94,38 @@ class MyPolicyResponse(BaseModel):
     status: str
     purchase_date: datetime # Keeps exact time to avoid date errors
     policy: PolicyResponse
+    
+    class Config:
+        from_attributes = True
+
+class Notification(BaseModel):
+    id: int
+    title: str
+    message: str
+    type: str
+    is_read: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class ClaimCreate(BaseModel):
+    purchase_id: int
+    incident_type: str
+    description: str
+    claim_amount: int
+
+    # --- SANITIZATION FOR CLAIMS ---
+    @validator('description')
+    def sanitize_description(cls, v):
+        # Prevent XSS in claim descriptions
+        clean_text = re.sub(r'<[^>]*>', '', v)  # Removes HTML tags
+        return clean_text
+
+class ClaimResponse(ClaimCreate):
+    id: int
+    status: str
+    created_at: datetime
     
     class Config:
         from_attributes = True

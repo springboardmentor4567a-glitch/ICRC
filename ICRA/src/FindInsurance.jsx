@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    Search,
-    Filter,
-    CheckCircle,
-    Info,
-    Heart,
-    BarChart2,
-    X,
-    Trash2,
-    Shield,
-    AlertCircle,
-    Clock,
-    ArrowLeft,
-    Layers
-} from 'lucide-react';
+import { Search, Filter, CheckCircle, Info, Heart, BarChart2, X, Trash2, Shield, AlertCircle, Clock, ArrowLeft, Layers } from 'lucide-react';
 
-const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
+const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed, onCheckout }) => {
     // --- STATES ---
     const [policies, setPolicies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +12,6 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
     const [showCompare, setShowCompare] = useState(false);
     const [wishlist, setWishlist] = useState([]);
     const [compareList, setCompareList] = useState([]);
-    const [buyingId, setBuyingId] = useState(null);
 
     // Filter States
     const [showFilters, setShowFilters] = useState(false);
@@ -46,9 +31,7 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
 
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
-                if (selectedPolicy) {
-                    handleCloseModal();
-                }
+                if (selectedPolicy) handleCloseModal();
                 setShowCompare(false);
                 setShowFilters(false);
             }
@@ -136,33 +119,11 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
         if (onModalClosed) onModalClosed();
     };
 
-    const handleBuy = async (e, policyId) => {
+    // UPDATED: Now redirects to Checkout instead of instant buy
+    const handleBuyClick = (e, policy) => {
         e.stopPropagation();
-        setBuyingId(policyId);
-        const token = localStorage.getItem('access_token');
-
-        if (!token) {
-            alert("You must be logged in to buy a policy.");
-            setBuyingId(null);
-            return;
-        }
-
-        try {
-            const res = await fetch(`http://127.0.0.1:8000/buy/${policyId}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                alert(data.message);
-                handleCloseModal();
-            } else {
-                alert(data.detail || "Purchase failed.");
-            }
-        } catch (err) {
-            alert("Network error. Try again later.");
-        } finally {
-            setBuyingId(null);
+        if (onCheckout) {
+            onCheckout(policy);
         }
     };
 
@@ -222,11 +183,7 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                     <div className="flex items-center gap-3">
-                        <div
-                            onClick={onBack}
-                            className="p-2 -ml-2 rounded-full hover:bg-slate-100 cursor-pointer transition-colors text-slate-600"
-                            title="Back to Dashboard"
-                        >
+                        <div onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-slate-100 cursor-pointer transition-colors text-slate-600">
                             <ArrowLeft size={24} />
                         </div>
                         <span className="text-xl font-bold text-slate-800 tracking-tight">Find Insurance</span>
@@ -325,13 +282,15 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                                                 ? 'bg-blue-50 border-blue-200 text-blue-600'
                                                 : 'text-slate-400 border-slate-200 hover:border-blue-200 hover:text-blue-600'
                                                 }`}
-                                            title={isCompared(policy.id) ? "Remove from Compare" : "Add to Compare"}
+                                            title="Compare"
                                         >
                                             <BarChart2 size={18} fill={isCompared(policy.id) ? "currentColor" : "none"} />
                                         </button>
 
                                         <button onClick={(e) => toggleWishlist(e, policy)} className={`p-2 border rounded-lg transition-colors ${isWishlisted(policy.id) ? 'bg-pink-50 border-pink-200 text-pink-600' : 'text-slate-400 border-slate-200 hover:text-pink-500 hover:border-pink-200'}`} title="Wishlist"><Heart size={18} fill={isWishlisted(policy.id) ? "currentColor" : "none"} /></button>
-                                        <button onClick={(e) => handleBuy(e, policy.id)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors">Buy Now</button>
+
+                                        {/* BUY BUTTON NOW CALLS NEW HANDLER */}
+                                        <button onClick={(e) => handleBuyClick(e, policy)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-blue-700 transition-colors">Buy Now</button>
                                     </div>
                                 </div>
                             </div>
@@ -364,16 +323,13 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                 </div>
             )}
 
-            {/* --- MODAL: DETAILS (Fixed Footer Issue Here) --- */}
+            {/* --- MODAL: DETAILS --- */}
             {selectedPolicy && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    {/* Fixed Layout: Flex Column with Hidden Overflow on Parent */}
                     <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl animate-fade-in relative flex flex-col overflow-hidden">
 
-                        {/* Close Button */}
                         <button onClick={handleCloseModal} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors z-10"><X size={20} /></button>
 
-                        {/* Header: Flex Shrink 0 (Always Visible) */}
                         <div className="p-8 border-b border-slate-100 bg-slate-50 flex-shrink-0">
                             <div className="flex items-center gap-4 mb-4">
                                 <span className="text-4xl">{selectedPolicy.logo}</span>
@@ -382,7 +338,6 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                             <p className="text-slate-600 leading-relaxed max-w-2xl">{selectedPolicy.description}</p>
                         </div>
 
-                        {/* Content: Flex 1 + min-h-0 (Scrollable Area) */}
                         <div className="p-8 space-y-8 overflow-y-auto flex-1 min-h-0">
                             <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg flex gap-3 items-start"><Info className="text-blue-600 mt-1 flex-shrink-0" size={20} /><div><h4 className="font-bold text-blue-800 text-sm mb-1">Analyst Report</h4><p className="text-sm text-blue-700">{selectedPolicy.reports}</p></div></div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -398,10 +353,9 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                             <div className="border-t border-slate-100 pt-6"><h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Clock className="text-orange-500" size={20} /> Waiting Period</h3><div className="flex flex-wrap gap-3">{selectedPolicy.waitingPeriod.map((item, idx) => (<span key={idx} className="px-3 py-1.5 bg-orange-50 text-orange-700 text-sm rounded-lg border border-orange-100 font-medium">{item}</span>))}</div></div>
                         </div>
 
-                        {/* Footer: Flex Shrink 0 (Always Visible at Bottom) */}
                         <div className="p-6 border-t border-slate-100 flex gap-4 bg-white flex-shrink-0 z-20">
-                            {/* Only Buy and Wishlist - Compare Icon Removed */}
-                            <button onClick={(e) => handleBuy(e, selectedPolicy.id)} disabled={buyingId === selectedPolicy.id} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50">{buyingId === selectedPolicy.id ? "Processing..." : "Buy Policy Now"}</button>
+                            {/* BUY BUTTON IN MODAL - CALLS NEW HANDLER */}
+                            <button onClick={(e) => handleBuyClick(e, selectedPolicy)} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Buy Policy Now</button>
                             <button onClick={(e) => toggleWishlist(e, selectedPolicy)} className={`p-3 rounded-xl border transition-colors ${isWishlisted(selectedPolicy.id) ? 'bg-pink-50 border-pink-200 text-pink-600' : 'bg-white border-slate-200 text-slate-400 hover:border-pink-200 hover:text-pink-500'}`} title="Wishlist"><Heart size={24} fill={isWishlisted(selectedPolicy.id) ? "currentColor" : "none"} /></button>
                         </div>
                     </div>
@@ -428,7 +382,8 @@ const FindInsurance = ({ onBack, autoOpenPolicyId, onModalClosed }) => {
                                 <tr className="border-b border-slate-100"><td className="p-4 font-medium text-slate-600">Cover</td>{compareList.map(p => (<td key={p.id} className="p-4 text-center border-l border-slate-100 font-semibold">{p.cover}</td>))}</tr>
                                 <tr className="border-b border-slate-100"><td className="p-4 font-medium text-slate-600">Settlement</td>{compareList.map(p => (<td key={p.id} className="p-4 text-center border-l border-slate-100 font-semibold text-green-600">{p.claimsRatio}</td>))}</tr>
                                 <tr className="border-b border-slate-100"><td className="p-4 font-medium text-slate-600">Features</td>{compareList.map(p => (<td key={p.id} className="p-4 text-center border-l border-slate-100 align-top"><ul className="text-sm text-slate-600 space-y-1 text-left inline-block">{(p.features || []).slice(0, 3).map(f => <li key={f}>• {f}</li>)}</ul></td>))}</tr>
-                                <tr><td className="p-4"></td>{compareList.map(p => (<td key={p.id} className="p-4 text-center border-l border-slate-100"><button onClick={(e) => handleBuy(e, p.id)} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow-md hover:bg-blue-700 transition-colors">Buy</button></td>))}</tr>
+                                {/* BUY BUTTON IN COMPARE TABLE - CALLS NEW HANDLER */}
+                                <tr><td className="p-4"></td>{compareList.map(p => (<td key={p.id} className="p-4 text-center border-l border-slate-100"><button onClick={(e) => handleBuyClick(e, p)} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow-md hover:bg-blue-700 transition-colors">Buy</button></td>))}</tr>
                             </tbody>
                         </table>
                     </div>

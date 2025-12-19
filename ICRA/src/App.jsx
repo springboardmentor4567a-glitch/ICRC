@@ -5,29 +5,39 @@ import Calculators from './Calculators';
 import FindInsurance from './FindInsurance';
 import MyPolicies from './MyPolicies';
 import RiskProfile from './RiskProfile';
-import Profile from './Profile'; // <--- NEW IMPORT
+import Profile from './Profile';
+import CheckoutPage from './CheckoutPage';
+import ActivityLog from './ActivityLog';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
 
-  // --- STATE TO TRACK AUTO-OPEN POLICY ---
+  // Navigation States
   const [autoOpenPolicyId, setAutoOpenPolicyId] = useState(null);
+  const [checkoutPolicy, setCheckoutPolicy] = useState(null); // <--- Holds policy data for checkout
 
-  // --- CHECK FOR SAVED SESSION ON LOAD ---
+  // Welcome Animation State
+  const [welcomeShown, setWelcomeShown] = useState(false);
+
+  // History API for Back Button
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_data');
-    const token = localStorage.getItem('access_token');
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
-  }, []);
+    const handlePopState = (event) => {
+      if (event.state && event.state.view) {
+        setCurrentView(event.state.view);
+      } else {
+        if (user) setCurrentView('dashboard');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [user]);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
     setCurrentView('dashboard');
+    setWelcomeShown(false);
+    window.history.pushState({ view: 'dashboard' }, '');
   };
 
   const handleLogout = () => {
@@ -36,19 +46,24 @@ function App() {
     localStorage.removeItem('user_data');
     setUser(null);
     setCurrentView('dashboard');
+    setWelcomeShown(false);
   };
 
-  // --- NAVIGATION HANDLER ---
-  const handleNavigate = (view, policyId = null) => {
+  // Unified Navigation Handler
+  // data can be: policyId (for FindInsurance) OR policyObject (for Checkout)
+  const handleNavigate = (view, data = null) => {
     setCurrentView(view);
-    if (policyId) {
-      setAutoOpenPolicyId(policyId);
-    }
-  };
 
-  if (loading) {
-    return <div className="h-screen w-full flex items-center justify-center bg-slate-50">Loading...</div>;
-  }
+    if (view === 'find-insurance' && data) {
+      setAutoOpenPolicyId(data); // data is ID
+    }
+
+    if (view === 'checkout' && data) {
+      setCheckoutPolicy(data); // data is Policy Object
+    }
+
+    window.history.pushState({ view }, '');
+  };
 
   // --- RENDER LOGIC ---
   return (
@@ -62,38 +77,50 @@ function App() {
               user={user}
               onLogout={handleLogout}
               onNavigate={handleNavigate}
+              welcomeShown={welcomeShown}
+              setWelcomeShown={setWelcomeShown}
             />
           )}
           {currentView === 'calculators' && (
             <Calculators
-              onBack={() => setCurrentView('dashboard')}
+              onBack={() => handleNavigate('dashboard')}
             />
           )}
           {currentView === 'find-insurance' && (
             <FindInsurance
-              onBack={() => setCurrentView('dashboard')}
+              onBack={() => handleNavigate('dashboard')}
               autoOpenPolicyId={autoOpenPolicyId}
               onModalClosed={() => setAutoOpenPolicyId(null)}
+              onCheckout={(policy) => handleNavigate('checkout', policy)} // <--- Pass Checkout Handler
+            />
+          )}
+          {currentView === 'checkout' && checkoutPolicy && (
+            <CheckoutPage
+              policy={checkoutPolicy}
+              onBack={() => handleNavigate('find-insurance')}
+              onPurchaseComplete={() => handleNavigate('my-policies')}
             />
           )}
           {currentView === 'my-policies' && (
             <MyPolicies
-              onBack={() => setCurrentView('dashboard')}
+              onBack={() => handleNavigate('dashboard')}
             />
           )}
           {currentView === 'risk-profile' && (
             <RiskProfile
-              onBack={() => setCurrentView('dashboard')}
-              onComplete={() => setCurrentView('dashboard')}
+              onBack={() => handleNavigate('dashboard')}
+              onComplete={() => handleNavigate('dashboard')}
             />
           )}
-          {/* NEW PROFILE ROUTE */}
           {currentView === 'profile' && (
             <Profile
               user={user}
-              onBack={() => setCurrentView('dashboard')}
+              onBack={() => handleNavigate('dashboard')}
               onLogout={handleLogout}
             />
+          )}
+          {currentView === 'activity-log' && (
+            <ActivityLog onBack={() => handleNavigate('dashboard')} />
           )}
         </>
       )}
