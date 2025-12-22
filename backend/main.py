@@ -41,6 +41,25 @@ def get_db():
         yield db
     finally:
         db.close()
+def get_current_user(
+    token: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    if token is None:
+        raise HTTPException(status_code=401, detail="Token missing")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("email")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
 
 
 def create_access_token(data: dict, expires_minutes=ACCESS_TOKEN_EXPIRE_MINUTES):
@@ -141,3 +160,20 @@ def get_policy(policy_id: int, db: Session = Depends(get_db)):
     if not p:
         raise HTTPException(status_code=404, detail="Policy not found")
     return p
+@app.post("/users/me/preferences")
+def save_preferences(
+    prefs: schemas.UserPreferences,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    current_user.risk_profile = prefs.dict()
+    db.commit()
+    db.refresh(current_user)
+
+    return {"message": "User preferences saved successfully"}
+@app.get("/users/me/preferences")
+def get_preferences(
+    current_user: models.User = Depends(get_current_user)
+):
+    return current_user.risk_profile
+

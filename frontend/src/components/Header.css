@@ -1,0 +1,43 @@
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 64px;
+  padding: 0 24px;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+
+  background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
+  z-index: 1000;
+
+  box-sizing: border-box;
+}
+
+/* LEFT */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: #c77dff;
+}
+
+/* CENTER */
+.header-center {
+  text-align: center;
+}
+
+/* RIGHT */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+

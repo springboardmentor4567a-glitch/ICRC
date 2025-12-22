@@ -42,3 +42,13 @@ class PolicyOut(BaseModel):
     provider: Optional[ProviderOut] = None
     class Config:
         orm_mode = True
+
+class UserPreferences(BaseModel):
+    age: int
+    gender: str
+    smoker: bool
+    marital_status: str
+    policy_type: str
+    annual_income: str
+    dependents: int
+    pre_existing_conditions: bool

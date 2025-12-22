@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ComparePolicies() {
-  const [, setPolicies] = useState([]);
   const [selectedPolicies, setSelectedPolicies] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const selectedIds = JSON.parse(
-      localStorage.getItem("compare_selected") || "[]"
-    );
+    const stored = localStorage.getItem("compare_selected");
+
+    if (!stored) return;
+
+    const selectedIds = JSON.parse(stored).map(Number);
 
     fetch("http://127.0.0.1:8000/policies")
       .then((res) => res.json())
       .then((data) => {
-        setPolicies(data);
-        const filtered = data.filter((p) => selectedIds.includes(p.id));
+        const filtered = data.filter((p) =>
+          selectedIds.includes(Number(p.id))
+        );
         setSelectedPolicies(filtered);
       });
   }, []);
@@ -26,17 +30,29 @@ export default function ComparePolicies() {
     );
   }
 
+  const cheapestPremium = Math.min(
+    ...selectedPolicies.map((p) => p.premium)
+  );
+
   return (
     <div style={{ padding: 30 }}>
       <h2 className="page-title">Compare Insurance Policies</h2>
 
-      <div className="compare-wrapper">
+      <div className="compare-wrapper fade-in">
         <table className="compare-table">
           <thead>
             <tr>
               <th>Feature</th>
               {selectedPolicies.map((p) => (
-                <th key={p.id}>{p.name}</th>
+                <th key={p.id}>
+                  {p.name}
+                  {p.premium === cheapestPremium && (
+                    <div className="badge cheapest">Best Value</div>
+                  )}
+                  {p.premium !== cheapestPremium && (
+                    <div className="badge popular">Popular</div>
+                  )}
+                </th>
               ))}
             </tr>
           </thead>
@@ -59,7 +75,17 @@ export default function ComparePolicies() {
             <tr>
               <td>Premium / Year</td>
               {selectedPolicies.map((p) => (
-                <td key={p.id}>₹{p.premium}</td>
+                <td
+                  key={p.id}
+                  style={{
+                    fontWeight:
+                      p.premium === cheapestPremium ? "bold" : "normal",
+                    color:
+                      p.premium === cheapestPremium ? "#22c55e" : "#222",
+                  }}
+                >
+                  ₹{p.premium}
+                </td>
               ))}
             </tr>
 
@@ -77,6 +103,15 @@ export default function ComparePolicies() {
               ))}
             </tr>
           </tbody>
+          <div style={{ marginTop: 24, textAlign: "center" }}>
+  <button
+    className="btn-outline" 
+    onClick={() => navigate("/plans")}
+  >
+    ← Back to Plans
+  </button>
+</div>
+
         </table>
       </div>
     </div>

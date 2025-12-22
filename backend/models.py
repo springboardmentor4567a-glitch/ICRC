@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from database import Base
 from datetime import datetime
 
@@ -10,6 +11,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     phone = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
+     # ✅ Week 3 addition
+    risk_profile = Column(JSONB, nullable=True)
 
 class Provider(Base):
     __tablename__ = "providers"
@@ -31,6 +34,7 @@ class Policy(Base):
     coverage = Column(String, nullable=True)   # short text e.g., "5 Lakh"
     premium = Column(Float, nullable=True)     # numeric premium (yearly)
     benefits = Column(Text, nullable=True)
+    terms_conditions = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     provider = relationship("Provider", back_populates="policies")

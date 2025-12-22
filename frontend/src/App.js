@@ -9,7 +9,9 @@ import Dashboard from "./pages/Dashboard";
 import Recommendations from "./pages/Recommendations";
 import FileClaim from "./pages/FileClaim";
 import PremiumCalculator from "./pages/PremiumCalculator";
+import UserPreferences from "./pages/UserPreferences";
 import "./App.css";
+import Layout from "./components/Layout";
 
 function App() {
   return (
@@ -19,16 +21,14 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* ✅ FIXED */}
-        <Route path="/plans" element={<AvailablePlans />} />
-
+        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/plans" element={<Layout><AvailablePlans /></Layout>} />
         <Route path="/compare" element={<ComparePolicies />} />
-        <Route path="/policy/:id" element={<PolicyDetails />} />
-        <Route path="/recommend" element={<Recommendations />} />
-        <Route path="/claims" element={<FileClaim />} />
-        <Route path="/calculator" element={<PremiumCalculator />} />
+        <Route path="/recommend" element={<Layout><Recommendations /></Layout>} />
+        <Route path="/preferences" element={<Layout><UserPreferences /></Layout>} />
+        <Route path="/claims" element={<Layout><FileClaim /></Layout>} />
+        <Route path="/calculator" element={<Layout><PremiumCalculator /></Layout>} />
+        <Route path="/policy/:id" element={<Layout><PolicyDetails /></Layout>} />
       </Routes>
     </BrowserRouter>
   );
