@@ -1,24 +1,7 @@
-<<<<<<< HEAD
 node_modules/
 venv/
-.DS_Store
 __pycache__/
+.env
 icra.db
-=======
-# --- System Files ---
 .DS_Store
-Thumbs.db
-
-# --- Python (Backend) ---
-icra-backend/venv/
-icra-backend/__pycache__/
-*.pyc
-
-# --- Node (Frontend) ---
-ICRA/node_modules/
-ICRA/dist/
-ICRA/.env
-
-# --- VS Code Settings ---
-.vscode/
->>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
+dist/

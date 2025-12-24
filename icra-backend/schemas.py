@@ -30,10 +30,7 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: str
-<<<<<<< HEAD
     role: Optional[str] = "user" # <--- ADD THIS
-=======
->>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
     risk_profile: Optional[dict] = {}
     
     class Config:
@@ -89,10 +86,7 @@ class PolicyResponse(BaseModel):
     cover_amount: int
     description: str
     features: str
-<<<<<<< HEAD
     active_users: Optional[int] = 0  # <--- ADD THIS LINE
-=======
->>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
     
     class Config:
         from_attributes = True
@@ -136,7 +130,6 @@ class ClaimResponse(ClaimCreate):
     created_at: datetime
     
     class Config:
-<<<<<<< HEAD
         from_attributes = True
 
 # Add this new schema for creating/editing policies
@@ -153,6 +146,3 @@ class PolicyCreate(BaseModel):
 class ClaimAction(BaseModel):
     action: str
     reason: Optional[str] = None
-=======
-        from_attributes = True
->>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
