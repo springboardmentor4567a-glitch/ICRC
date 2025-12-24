@@ -11,7 +11,14 @@ class User(Base):
     name = Column(String)
     password = Column(String)
     dob = Column(DateTime)
+    
+    # --- NEW COLUMN ---
+    role = Column(String, default="user") # 'user' or 'admin'
+    
     risk_profile = Column(JSON, default={}) # Stores: {income, smoker, vehicle, etc}
+    
+    # --- ADD THIS NEW FIELD ---
+    last_login = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships
     policies = relationship("UserPolicy", back_populates="user")
@@ -80,3 +87,28 @@ class Claim(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     purchase = relationship("UserPolicy", back_populates="claims")
+
+# --- MILESTONE 4: FRAUD & ADMIN MODELS ---
+# Add these to the bottom of models.py
+
+class FraudFlag(Base):
+    __tablename__ = "fraud_flags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(Integer, ForeignKey("claims.id"))
+    rule_code = Column(String)  # e.g., "F01_QUICK_CLAIM"
+    severity = Column(String)   # "High", "Medium", "Low"
+    details = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    # Relationship
+    claim = relationship("Claim")
+
+class AdminLog(Base):
+    __tablename__ = "admin_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    admin_id = Column(Integer, ForeignKey("users.id"))
+    action = Column(String)      # e.g., "APPROVED_CLAIM"
+    target_id = Column(Integer)  # ID of the claim/policy affected
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)

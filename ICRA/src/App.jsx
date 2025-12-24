@@ -8,6 +8,7 @@ import RiskProfile from './RiskProfile';
 import Profile from './Profile';
 import CheckoutPage from './CheckoutPage';
 import ActivityLog from './ActivityLog';
+import AdminDashboard from './AdminDashboard';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,12 +36,31 @@ function App() {
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
-    setCurrentView('dashboard');
     setWelcomeShown(false);
-    window.history.pushState({ view: 'dashboard' }, '');
+    
+    // Check ROLE from backend response
+    if (userData.role === 'admin') {
+         setCurrentView('admin');
+         window.history.pushState({ view: 'admin' }, '');
+    } else {
+         setCurrentView('dashboard');
+         window.history.pushState({ view: 'dashboard' }, '');
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // --- NEW: Tell backend to mark us offline ---
+    try {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            await fetch('http://127.0.0.1:8000/auth/logout', { 
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        }
+    } catch (e) { console.error("Logout error", e); }
+    // ---------------------------------------------
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
@@ -121,6 +141,9 @@ function App() {
           )}
           {currentView === 'activity-log' && (
             <ActivityLog onBack={() => handleNavigate('dashboard')} />
+          )}
+          {currentView === 'admin' && (
+            <AdminDashboard onLogout={handleLogout} />
           )}
         </>
       )}

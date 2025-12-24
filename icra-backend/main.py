@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 import models, schemas, database
 import recommendations
+import fraud_engine
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -146,6 +147,24 @@ def seed_policies(db: Session):
     
     db.commit()
     print(f"✅ Database Populated with {len(new_policies)} Policies!")
+    
+    # --- ADD THIS: SEED MASTER ADMIN ---
+    admin_email = "admin@icra.com"
+    existing_admin = db.query(models.User).filter(models.User.email == admin_email).first()
+    
+    if not existing_admin:
+        print("🛡️ Creating Master Admin Account...")
+        hashed_pwd = pwd_context.hash("Admin@123") # Default Password
+        admin_user = models.User(
+            name="Master Admin",
+            email=admin_email,
+            password=hashed_pwd,
+            role="admin", # <--- The Magic Key
+            dob=datetime.utcnow()
+        )
+        db.add(admin_user)
+        db.commit()
+        print(f"✅ Master Admin created: {admin_email} / Admin@123")
 
 # --- STARTUP EVENT ---
 @app.on_event("startup")
@@ -217,6 +236,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
         raise credentials_exception
+    return user
+
+def check_admin_access(user: models.User = Depends(get_current_user)):
+    """Helper function to ensure only admins can access certain endpoints"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
 def send_email_otp(to_email: str, otp: str):
@@ -320,6 +345,10 @@ def login(request: Request, user: schemas.UserLogin, db: Session = Depends(datab
     if not db_user or not pwd_context.verify(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid email or password")
     
+    # --- ADD THIS: Update Last Login ---
+    db_user.last_login = datetime.utcnow()
+    db.commit()
+    
     access_token = create_token(data={"sub": db_user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_token = create_token(data={"sub": db_user.email}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     
@@ -361,17 +390,37 @@ def refresh_token(request: schemas.RefreshTokenRequest, db: Session = Depends(da
         "user": user
     }
 
+@app.post("/auth/logout")
+def logout(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    # Force the user's last_login to a past date so they don't show as online
+    user.last_login = datetime.utcnow() - timedelta(days=365) 
+    db.commit()
+    return {"msg": "Logged out successfully"}
+
 # ==========================
 # --- POLICY ENDPOINTS ---
 # ==========================
 
 @app.get("/policies", response_model=List[schemas.PolicyResponse])
 def get_policies(category: Optional[str] = None, db: Session = Depends(database.get_db)):
+    query = db.query(models.Policy)
     if category and category != "All":
-        policies = db.query(models.Policy).filter(models.Policy.category == category).all()
-    else:
-        policies = db.query(models.Policy).all()
-    return policies
+        query = query.filter(models.Policy.category == category)
+    
+    policies = query.all()
+    
+    # Inject Active User Count
+    results = []
+    for p in policies:
+        # Count how many users have bought this policy
+        count = db.query(models.UserPolicy).filter(models.UserPolicy.policy_id == p.id).count()
+        
+        # We convert to a dictionary to append the new field without changing the DB Model
+        p_data = p.__dict__.copy()
+        p_data['active_users'] = count
+        results.append(p_data)
+        
+    return results
 
 @app.get("/policies/{policy_id}", response_model=schemas.PolicyResponse)
 def get_policy_detail(policy_id: int, db: Session = Depends(database.get_db)):
@@ -534,6 +583,10 @@ def file_claim(request: Request, claim: schemas.ClaimCreate, db: Session = Depen
     db.add(notif)
     
     db.commit()
+    
+    # --- ADD THIS LINE FOR MILESTONE 4 ---
+    fraud_engine.run_fraud_check(db, new_claim.id)
+    
     return {"msg": "Claim submitted"}
 
 @app.get("/claims", response_model=List[schemas.ClaimResponse])
@@ -581,3 +634,146 @@ def renew_policy(purchase_id: int, db: Session = Depends(database.get_db), curre
     
     db.commit()
     return {"msg": "Policy renewed successfully"}
+
+# ==========================
+# --- MILESTONE 4: ADMIN & FRAUD ---
+# ==========================
+
+@app.post("/admin/scan/{claim_id}")
+def trigger_fraud_scan(claim_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    """Manually triggers the fraud engine for a specific claim"""
+    fraud_engine.run_fraud_check(db, claim_id)
+    return {"msg": "Scan complete"}
+
+@app.get("/admin/dashboard-stats")
+def get_admin_stats(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    """Returns analytics for the admin dashboard"""
+    total_users = db.query(models.User).count()
+    total_claims = db.query(models.Claim).count()
+    pending_claims = db.query(models.Claim).filter(models.Claim.status == "Pending").count()
+    flagged_claims = db.query(models.FraudFlag).count()
+    
+    # --- UPDATED: 5 Minutes Window ---
+    five_mins_ago = datetime.utcnow() - timedelta(minutes=5)
+    online_users = db.query(models.User).filter(models.User.last_login >= five_mins_ago).count()
+    
+    return {
+        "users": total_users,
+        "online_users": online_users, # <--- Return this new field
+        "claims": total_claims,
+        "pending": pending_claims,
+        "fraud_alerts": flagged_claims
+    }
+
+@app.get("/admin/claims-feed")
+def get_admin_claims(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    """Fetches all claims WITH their fraud flags attached"""
+    # 1. Get all claims
+    claims = db.query(models.Claim).order_by(models.Claim.created_at.desc()).all()
+    results = []
+    
+    for c in claims:
+        # 2. Get User Name
+        user = db.query(models.User).filter(models.User.id == c.user_id).first()
+        # 3. Get Flags
+        flags = db.query(models.FraudFlag).filter(models.FraudFlag.claim_id == c.id).all()
+        
+        results.append({
+            "id": c.id,
+            "user": user.name if user else "Unknown",
+            "type": c.incident_type,
+            "description": c.description,
+            "amount": c.claim_amount,
+            "status": c.status,
+            "date": c.created_at,
+            "flags": [{"severity": f.severity, "code": f.rule_code, "details": f.details} for f in flags]
+        })
+    return results
+
+@app.put("/admin/claims/{claim_id}/action")
+def process_claim_action(claim_id: int, payload: schemas.ClaimAction, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    claim = db.query(models.Claim).filter(models.Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+        
+    if payload.action.lower() == "approve":
+        claim.status = "Approved"
+        msg = f"Good news! Your claim #{1000+claim.id} for {claim.incident_type} has been APPROVED."
+        typ = "success"
+    
+    elif payload.action.lower() == "reject":
+        claim.status = "Rejected"
+        reason = payload.reason or "Policy criteria not met."
+        
+        # SMART TRICK: Append the Admin Note to the description so it appears in User History without DB changes
+        if "|| [Admin Note:" not in claim.description:
+            claim.description = f"{claim.description} || [Admin Note: {reason}]"
+            
+        msg = f"Update on Claim #{1000+claim.id}: REJECTED. Reason: {reason}"
+        typ = "warning"
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+        
+    # Create Notification for User
+    notif = models.Notification(
+        user_id=claim.user_id,
+        title=f"Claim {claim.status}",
+        message=msg,
+        type=typ
+    )
+    db.add(notif)
+    db.commit()
+    return {"msg": f"Claim {payload.action} successfully"}
+
+# --- ADMIN CONTROL CENTER ENDPOINTS ---
+
+@app.post("/admin/policies")
+def create_policy(policy: schemas.PolicyCreate, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    new_policy = models.Policy(**policy.dict())
+    db.add(new_policy)
+    db.commit()
+    return {"msg": "Policy created successfully"}
+
+@app.put("/admin/policies/{policy_id}")
+def update_policy(policy_id: int, policy: schemas.PolicyCreate, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    db_policy = db.query(models.Policy).filter(models.Policy.id == policy_id).first()
+    if not db_policy:
+         raise HTTPException(status_code=404, detail="Policy not found")
+    
+    # Update fields
+    db_policy.category = policy.category
+    db_policy.provider = policy.provider
+    db_policy.policy_name = policy.policy_name
+    db_policy.premium = policy.premium
+    db_policy.cover_amount = policy.cover_amount
+    db_policy.description = policy.description
+    db_policy.features = policy.features
+    
+    db.commit()
+    return {"msg": "Policy updated successfully"}
+
+@app.delete("/admin/policies/{policy_id}")
+def delete_policy_admin(policy_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    # Check if used
+    usage = db.query(models.UserPolicy).filter(models.UserPolicy.policy_id == policy_id).count()
+    if usage > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete: Active in {usage} user portfolios.")
+    
+    db.query(models.Policy).filter(models.Policy.id == policy_id).delete()
+    db.commit()
+    return {"msg": "Policy deleted"}
+
+@app.get("/admin/users-list")
+def get_all_users(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    return db.query(models.User).all()
+
+@app.delete("/admin/users/{user_id}")
+def ban_user(user_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    if user_id == user.id:
+        raise HTTPException(status_code=400, detail="You cannot ban yourself.")
+    
+    # Cascade delete (Or just delete user, sqlalchemy handles cascade if set, otherwise manual)
+    db.query(models.UserPolicy).filter(models.UserPolicy.user_id == user_id).delete()
+    db.query(models.User).filter(models.User.id == user_id).delete()
+    db.commit()
+    return {"msg": "User and their data removed."}

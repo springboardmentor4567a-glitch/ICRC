@@ -368,6 +368,15 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
         )}
 
       </main>
+      
+      {/* Hidden Admin Access Button (Bottom Right) */}
+      <div 
+        onClick={() => onNavigate('admin')} 
+        className="fixed bottom-4 right-4 w-12 h-12 bg-slate-800 opacity-10 hover:opacity-30 rounded-full cursor-pointer transition-opacity flex items-center justify-center"
+        title="Admin Dashboard"
+      >
+        <ShieldCheck size={20} className="text-white" />
+      </div>
     </div>
   );
 };
