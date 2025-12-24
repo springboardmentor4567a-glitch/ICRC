@@ -11,6 +11,7 @@ class User(Base):
     name = Column(String)
     password = Column(String)
     dob = Column(DateTime)
+<<<<<<< HEAD
     
     # --- NEW COLUMN ---
     role = Column(String, default="user") # 'user' or 'admin'
@@ -19,6 +20,9 @@ class User(Base):
     
     # --- ADD THIS NEW FIELD ---
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
+=======
+    risk_profile = Column(JSON, default={}) # Stores: {income, smoker, vehicle, etc}
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
 
     # Relationships
     policies = relationship("UserPolicy", back_populates="user")
@@ -86,6 +90,7 @@ class Claim(Base):
     status = Column(String, default="Pending") # Pending, Approved, Rejected
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+<<<<<<< HEAD
     purchase = relationship("UserPolicy", back_populates="claims")
 
 # --- MILESTONE 4: FRAUD & ADMIN MODELS ---
@@ -112,3 +117,6 @@ class AdminLog(Base):
     action = Column(String)      # e.g., "APPROVED_CLAIM"
     target_id = Column(Integer)  # ID of the claim/policy affected
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+=======
+    purchase = relationship("UserPolicy", back_populates="claims")
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7

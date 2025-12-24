@@ -368,6 +368,7 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
         )}
 
       </main>
+<<<<<<< HEAD
       
       {/* Hidden Admin Access Button (Bottom Right) */}
       <div 
@@ -377,6 +378,8 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
       >
         <ShieldCheck size={20} className="text-white" />
       </div>
+=======
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
     </div>
   );
 };

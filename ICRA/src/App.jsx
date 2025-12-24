@@ -8,7 +8,10 @@ import RiskProfile from './RiskProfile';
 import Profile from './Profile';
 import CheckoutPage from './CheckoutPage';
 import ActivityLog from './ActivityLog';
+<<<<<<< HEAD
 import AdminDashboard from './AdminDashboard';
+=======
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
 
 function App() {
   const [user, setUser] = useState(null);
@@ -36,6 +39,7 @@ function App() {
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
+<<<<<<< HEAD
     setWelcomeShown(false);
     
     // Check ROLE from backend response
@@ -61,6 +65,14 @@ function App() {
     } catch (e) { console.error("Logout error", e); }
     // ---------------------------------------------
 
+=======
+    setCurrentView('dashboard');
+    setWelcomeShown(false);
+    window.history.pushState({ view: 'dashboard' }, '');
+  };
+
+  const handleLogout = () => {
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
@@ -142,9 +154,12 @@ function App() {
           {currentView === 'activity-log' && (
             <ActivityLog onBack={() => handleNavigate('dashboard')} />
           )}
+<<<<<<< HEAD
           {currentView === 'admin' && (
             <AdminDashboard onLogout={handleLogout} />
           )}
+=======
+>>>>>>> d3f807c35cd56039ec5d0b697a32adf89bb718d7
         </>
       )}
     </div>
