@@ -85,7 +85,7 @@ export default function Register() {
 
 
           <p style={{marginTop:"12px"}}>
-            Already have an account? <a href="/login" style={{color:"#c77dff"}}>Login</a>
+            Already have an account? <a href="/login" style={{color:"#c77dffff"}}>Login</a>
           </p>
         </form>
       </div>

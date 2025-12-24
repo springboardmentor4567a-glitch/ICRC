@@ -8,8 +8,8 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #0a0a0f, #1b1b2f);
-  color: #fff;
+  background: linear-gradient(135deg, #fdf4ff, #fae8ff);
+  color: #e5e7eb;
 }
 
 /* ================= HEADINGS ================= */
@@ -24,7 +24,7 @@ body {
 .page-desc {
   text-align: center;
   font-size: 15px;
-  color: #c7c7ff;
+  color: black;
   margin-bottom: 30px;
 }
 
@@ -82,14 +82,14 @@ body {
   border-radius: 8px;
   background: rgba(255,255,255,0.15);
   border: none;
-  color: white;
+  color:rgba(20, 19, 19, 0.751);
   outline: none;
   font-size: 14px;
   display: block; /* IMPORTANT */
 }
 
 .input-box::placeholder {
-  color: #ddd;
+  color: gray;
 }
 
 .form-actions {
@@ -382,7 +382,7 @@ color:#000
 
 .pref-field label {
   font-size: 13px;
-  color: #c7c7ff;
+  color: gray;
   margin-bottom: 6px;
   display: block;
 }
@@ -393,8 +393,8 @@ color:#000
   padding: 6px 10px;
   border-radius: 8px;
   background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.18); /* ⬅ separation */
-  color: white;
+  border: 1px solid rgba(113, 112, 112, 0.515); /* ⬅ separation */
+  color: rgba(0, 0, 0, 0.795);
   font-size: 14px;
   outline: none;
 }
@@ -417,11 +417,11 @@ color:#000
 
 .pref-checkbox-row label {
   font-size: 14px;
-  color: #fff;
+  color: rgba(15, 15, 15, 0.926);
 }
 
 .pref-success {
-  background: #22c55e;
+  background: #34df73;
   color: black;
   padding: 10px;
   border-radius: 8px;
@@ -453,26 +453,26 @@ color:#000
 }
 
 .browse-search {
-  flex: 1;
+  flex: 5;
   padding: 12px 16px;
   border-radius: 12px;
-  border: none;
-  outline: none;
+  border:#111;
+  outline: black;
   font-size: 14px;
-  background: rgba(255,255,255,0.15);
-  color: white;
+  background: rgba(255, 255, 255, 0.177);
+  color: rgba(0, 0, 0, 0.696);
 }
 
 .browse-search::placeholder {
-  color: #ddd;
+  color: rgba(89, 85, 85, 0.704);
 }
 
 .browse-select {
   padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
+  border-radius: 20px;
+  border:#111;
   background: rgba(255,255,255,0.15);
-  color: white;
+  color: black;
   font-size: 14px;
   cursor: pointer;
 }
@@ -630,7 +630,7 @@ color:#000
 
 .policy-section {
   margin-bottom: 18px;
-  color: #f1f1ff;
+  color:rgb(125, 124, 120);
 }
 
 .policy-section h4 {

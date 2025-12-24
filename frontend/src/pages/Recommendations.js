@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { calculateRiskProfile } from "../utils/riskProfile";
 
 export default function Recommendations() {
   const navigate = useNavigate();
@@ -7,7 +8,7 @@ export default function Recommendations() {
   const [profile, setProfile] = useState(null);
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const risk = profile ? calculateRiskProfile(profile) : "";
   /* ---------------- FETCH PROFILE + POLICIES ---------------- */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -61,22 +62,30 @@ export default function Recommendations() {
 
 
   /* ---------------- RECOMMENDATION LOGIC ---------------- */
-  const matched = policies
-    .filter((p) => {
-      if (!p.category || !userCategory) return false;
-      return p.category.toLowerCase() === userCategory;
-    })
-    .map((p) => {
-      let score = 0;
+ const matched = policies
+  .filter((p) => {
+    if (!p.category || !userCategory) return false;
+    return p.category.toLowerCase() === userCategory;
+  })
+  .map((p) => {
+    let score = 0;
 
-      if (profile.age <= 30) score += 2;
-      if (!profile.smoker) score += 2;
-      if (profile.annual_income === "1-3L" && p.premium <= 9000) score += 2;
-      if (!profile.pre_existing_conditions) score += 1;
+    // -------- BASIC MATCHING --------
+    if (profile.age <= 30) score += 2;
+    if (!profile.smoker) score += 2;
+    if (!profile.pre_existing_conditions) score += 1;
 
-      return { ...p, score };
-    })
-    .sort((a, b) => b.score - a.score);
+    // -------- RISK-BASED LOGIC --------
+    if (risk === "Low Risk" && p.premium <= 10000) score += 3;
+
+    if (risk === "Medium Risk" && p.premium <= 14000) score += 3;
+
+    if (risk === "High Risk" && p.coverage?.includes("10")) score += 3;
+
+    return { ...p, score };
+  })
+  .sort((a, b) => b.score - a.score);
+
 
   if (matched.length === 0) {
     return (
@@ -88,28 +97,73 @@ export default function Recommendations() {
 
   const best = matched[0];
   const others = matched.slice(1, 6); // ✅ 5 other plans
+  
+  const getRiskBadge = (risk) => {
+  if (risk === "Low Risk") return { text: "LOW RISK", color: "#22c55e" };
+  if (risk === "Medium Risk") return { text: "MEDIUM RISK", color: "#facc15" };
+  return { text: "HIGH RISK", color: "#ef4444" };
+};
+
+const riskBadge = getRiskBadge(risk);
+
 
   /* ---------------- UI ---------------- */
   return (
-    <div style={{ color: "white", paddingTop: "40px", textAlign: "center" }}>
+    <div style={{ color: "#1f2937", paddingTop: "40px", textAlign: "center" }}>
       <h1 style={{ color: "#9d4edd" }}>🎯 Recommended for You</h1>
       <p>Based on your profile</p>
+
+      {/* ---- RISK BADGE ---- */}
+<div
+  style={{
+    display: "inline-block",
+    marginBottom: "20px",
+    padding: "6px 14px",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    background:
+      risk === "High Risk"
+        ? "#dc2626"
+        : risk === "Medium Risk"
+        ? "#facc15"
+        : "#16a34a",
+    color: "black",
+  }}
+>
+  {risk}
+</div>
+
 
       {/* ---------- BEST MATCH ---------- */}
       <div
         style={{
           width: "420px",
           margin: "30px auto",
-          background: "#1e1e2f",
+          background:"white",
           padding: "25px",
           borderRadius: "14px",
-          boxShadow: "0 0 20px #6a0dad",
+          boxShadow: "0 0 20px #ca94f6ff",
           textAlign: "left",
         }}
       >
         <p style={{ color: "#facc15", fontWeight: "bold" }}>⭐ BEST MATCH</p>
+        <span
+  style={{
+    display: "inline-block",
+    padding: "4px 10px",
+    background: riskBadge.color,
+    color: "#000",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    marginBottom: "10px",
+  }}
+>
+  {riskBadge.text}
+</span>
+
         <h2>{best.name}</h2>
-        <p style={{ color: "#a6e3a1" }}>₹{best.premium} / year</p>
+        <p style={{ color: "#40e531ff" }}>₹{best.premium} / year</p>
         <p>{best.benefits || "Comprehensive coverage"}</p>
 
         <p style={{ fontSize: "14px", marginTop: "10px" }}>
@@ -124,8 +178,8 @@ export default function Recommendations() {
             marginTop: "15px",
             width: "100%",
             padding: "12px",
-            background: "#7b2cbf",
-            color: "white",
+            background: " linear-gradient(90deg, #6c63ff, #c77dff)",
+            color: "black",
             border: "none",
             borderRadius: "8px",
             cursor: "default",
@@ -137,7 +191,7 @@ export default function Recommendations() {
       {/* ---------- UPDATE PROFILE (LAST) ---------- */}
       <p
         style={{
-          color: "white",
+          color: "#1f2937",
           marginTop: "50px",
           cursor: "pointer",
         }}
@@ -167,15 +221,15 @@ export default function Recommendations() {
                 key={p.id}
                 style={{
                   width: "260px",
-                  background: "#1e1e2f",
+                  background: "white",
                   padding: "20px",
                   borderRadius: "12px",
-                  boxShadow: "0 0 10px #6a0dad",
+                  boxShadow: "0 0 10px #bb7ae9ff",
                   textAlign: "left",
                 }}
               >
                 <h4>{p.name}</h4>
-                <p style={{ color: "#a6e3a1" }}>
+                <p style={{ color: "#4fdf42ff" }}>
                   ₹{p.premium} / year
                 </p>
 
@@ -185,8 +239,8 @@ export default function Recommendations() {
                     marginTop: "10px",
                     width: "100%",
                     padding: "8px",
-                    background: "transparent",
-                    color: "#c77dff",
+                    background: " linear-gradient(90deg, #6c63ff, #c77dff)",
+                    color: "#121113ff",
                     border: "1px solid #c77dff",
                     borderRadius: "6px",
                     cursor: "default",

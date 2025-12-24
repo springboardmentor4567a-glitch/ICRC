@@ -10,24 +10,26 @@ export default function UserPreferences() {
   const [form, setForm] = useState({
     age: "",
     gender: "",
-    smoker: false,
+    employment_type: "",
     marital_status: "",
     policy_type: "",
     annual_income: "",
-    dependents: "",
-    pre_existing_conditions: false,
-    employment_type: "",
     coverage_amount: "",
+    dependents: "",
+    smoker: false,
+    pre_existing_conditions: false,
   });
 
+  /* ---------- Handle Input Change ---------- */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
+  /* ---------- Submit Preferences ---------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -39,40 +41,48 @@ export default function UserPreferences() {
       return;
     }
 
+    const payload = {
+      age: Number(form.age),
+      gender: form.gender,
+      employment_type: form.employment_type,
+      marital_status: form.marital_status,
+      policy_type: form.policy_type,
+      annual_income: form.annual_income,        // ✅ string
+      coverage_amount: form.coverage_amount,    // ✅ string
+      dependents: Number(form.dependents),
+      smoker: form.smoker,
+      pre_existing_conditions: form.pre_existing_conditions,
+    };
+
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/users/me/preferences",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            token: token, // ✅ backend expects this
-          },
-          body: JSON.stringify({
-            age: Number(form.age),
-            gender: form.gender,
-            smoker: form.smoker,
-            marital_status: form.marital_status,
-            policy_type: form.policy_type,
-            employment_type: form.employment_type,
-            pre_existing_conditions: form.pre_existing_conditions,
-            dependents: Number(form.dependents),
+  "http://127.0.0.1:8000/users/me/preferences",
+  {
+    method: "POST",
+    headers: {
+  "Content-Type": "application/json",
 
-            // ✅ SEND AS STRINGS (CRITICAL FIX)
-            annual_income: form.annual_income,
-            coverage_amount: form.coverage_amount,
-          }),
-        }
-      );
+  // ✅ backend expects THIS
+  token: token,
 
-      if (res.ok) {
-        setSuccess(true);
-        setTimeout(() => navigate("/recommend"), 1200);
-      } else {
-        const msg = await res.text();
-        console.error("Backend error:", msg);
+  // ✅ keep this for future-proofing
+  Authorization: `Bearer ${token}`,
+},
+
+
+    body: JSON.stringify(payload),
+  }
+);
+
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("Backend error:", err);
         setError("Invalid preference values. Please review inputs.");
+        return;
       }
+
+      setSuccess(true);
+      setTimeout(() => navigate("/recommend"), 1200);
     } catch (err) {
       console.error(err);
       setError("Server not reachable. Try again later.");
@@ -96,17 +106,21 @@ export default function UserPreferences() {
 
         <form onSubmit={handleSubmit}>
           <div className="pref-grid">
+            {/* Age */}
             <div className="pref-field">
               <label>Age</label>
               <input
-                className="pref-input"
                 type="number"
+                className="pref-input"
                 name="age"
+                min="18"
+                max="80"
                 required
                 onChange={handleChange}
               />
             </div>
 
+            {/* Gender */}
             <div className="pref-field">
               <label>Gender</label>
               <select
@@ -121,11 +135,13 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Employment */}
             <div className="pref-field">
               <label>Employment Type</label>
               <select
                 className="pref-input"
                 name="employment_type"
+                required
                 onChange={handleChange}
               >
                 <option value="">Select</option>
@@ -135,6 +151,7 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Marital Status */}
             <div className="pref-field">
               <label>Marital Status</label>
               <select
@@ -149,6 +166,7 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Policy Type */}
             <div className="pref-field">
               <label>Policy Type</label>
               <select
@@ -163,6 +181,7 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Annual Income */}
             <div className="pref-field">
               <label>Annual Income</label>
               <select
@@ -178,6 +197,7 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Coverage */}
             <div className="pref-field">
               <label>Coverage Amount</label>
               <select
@@ -193,22 +213,32 @@ export default function UserPreferences() {
               </select>
             </div>
 
+            {/* Dependents */}
             <div className="pref-field">
               <label>Dependents</label>
               <input
-                className="pref-input"
                 type="number"
+                className="pref-input"
                 name="dependents"
+                min="0"
+                max="10"
                 required
                 onChange={handleChange}
               />
             </div>
           </div>
 
+          {/* Checkboxes */}
           <div className="pref-checkbox-row">
             <label>
-              <input type="checkbox" name="smoker" onChange={handleChange} /> Smoker
+              <input
+                type="checkbox"
+                name="smoker"
+                onChange={handleChange}
+              />{" "}
+              Smoker
             </label>
+
             <label>
               <input
                 type="checkbox"
@@ -219,7 +249,7 @@ export default function UserPreferences() {
             </label>
           </div>
 
-          <div style={{ marginTop: "26px" }}>
+          <div style={{ marginTop: 26 }}>
             <button className="btn-purple full" type="submit">
               Save Preferences
             </button>
@@ -229,3 +259,5 @@ export default function UserPreferences() {
     </div>
   );
 }
+
+

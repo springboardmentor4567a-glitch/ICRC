@@ -42,6 +42,16 @@ export default function AvailablePlans() {
       JSON.stringify(selected.map(Number))
     );
   }, [selected]);
+useEffect(() => {
+  const stored = localStorage.getItem("compare_selected");
+  if (stored) {
+    try {
+      setSelected(JSON.parse(stored).map(Number));
+    } catch {
+      setSelected([]);
+    }
+  }
+}, []);
 
   /* ================= COMPARE ================= */
   const toggleCompare = (id) => {
