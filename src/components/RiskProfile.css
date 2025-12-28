@@ -1,0 +1,236 @@
+/* src/components/RiskProfile.css */
+
+.risk-profile-wrapper {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding:  20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.risk-profile-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 700px; /* Made wider to fit side-by-side inputs */
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', sans-serif;
+  border: 1px solid #e2e8f0;
+}
+
+/* Header */
+.risk-profile-container h2 {
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* --- NEW: Grid Layout for Short Inputs --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  gap: 20px;
+}
+
+/* On mobile, stack them back to 1 column */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- NEW: Policy Interest Cards (Tiles) --- */
+.policy-type-grid {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.policy-card-checkbox {
+  flex: 1;
+  position: relative;
+}
+
+/* Hide the actual checkbox */
+.policy-card-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* The visible tile */
+.policy-card-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+  font-weight: 600;
+  text-align: center;
+  height: 100%;
+}
+
+.policy-card-label:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Style when selected */
+.policy-card-checkbox input:checked + .policy-card-label {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+/* Standard Inputs */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.form-group input[type="number"], 
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s;
+  background-color: #f8fafc;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+  border-color: #3b82f6;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* Conditional Sections */
+.conditional-section {
+  background-color: #f0f9ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid #bae6fd;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.checkbox-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: #2563eb;
+}
+
+.checkbox-row label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Buttons */
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #334155;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.back-btn:hover {
+  background-color: #1e293b;
+  transform: translateX(-3px);
+}
+
+.error-msg {
+  color: #ef4444;
+  text-align: center;
+  background: #fef2f2;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* src/components/RiskProfile.css */
+
+/* ✅ FIXED: Added input[type="text"] to the list so Income field gets styled */
+.form-group input[type="number"], 
+.form-group input[type="text"], 
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: all 0.2s;
+  background-color: #f8fafc;
+  color: #334155; /* Ensure text color is consistent */
+  font-family: inherit;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+  border-color: #3b82f6;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}

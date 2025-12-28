@@ -1,0 +1,334 @@
+/* src/components/Recommendations/Recommendations.css */
+
+/* --- PAGE LAYOUT --- */
+.rec-page-container {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 140px; 
+  font-family: 'Segoe UI', sans-serif;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.rec-content-wrapper { max-width: 1200px; margin: 0 auto; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+/* --- HEADER --- */
+.nav-row { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+.back-btn {
+  background: #0f172a; color: white; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.back-btn:hover { background: #334155; transform: translateY(-2px); }
+
+.update-profile-btn {
+  background: white; color: #2563eb; border: 2px solid #2563eb;
+  padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer;
+}
+.update-profile-btn:hover { background: #2563eb; color: white; }
+
+.rec-header { text-align: center; margin-bottom: 40px; }
+.rec-header h1 { font-size: 2.2rem; color: #1e293b; margin-bottom: 10px; }
+.rec-header p { color: #64748b; font-size: 1.1rem; }
+
+.filter-container { display: flex; justify-content: center; gap: 12px; margin-top: 25px; }
+.filter-btn {
+  padding: 10px 24px; border-radius: 30px; border: 1px solid #e2e8f0;
+  background: white; color: #64748b; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.filter-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.filter-btn.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+
+/* --- GRID & CARDS --- */
+.category-section { margin-bottom: 60px; }
+.category-header { 
+  border-bottom: 2px solid #e2e8f0; 
+  margin-bottom: 35px; 
+  padding-bottom: 15px; 
+}
+.category-header h2 { font-size: 1.6rem; color: #334155; margin: 0; }
+
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 30px;
+}
+
+.rec-card {
+  background: white; border-radius: 16px; padding: 25px;
+  border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  display: flex; flex-direction: column; position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 10px; 
+}
+.rec-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+.rec-card.best-match-card { border: 2px solid #2563eb; background: #f8fbff; }
+
+.best-match-badge {
+  position: absolute; top: -14px; right: 20px;
+  background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.rec-card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.star-icon { font-size: 2rem; background: #eff6ff; padding: 10px; border-radius: 12px; }
+
+.rec-card h3 { margin: 0 0 5px 0; color: #1e293b; font-size: 1.3rem; font-weight: 700; }
+.policy-provider { font-size: 0.85rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+
+.rec-price { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 10px 0; }
+.rec-price .term { font-size: 0.95rem; color: #64748b; font-weight: 500; }
+
+.static-coverage {
+    display: inline-block; background: #f1f5f9; color: #475569;
+    padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.9rem;
+    margin-bottom: 15px; border: 1px solid #e2e8f0;
+}
+
+.rec-benefits { list-style: none; padding: 0; margin-bottom: 20px; font-size: 0.9rem; color: #475569; }
+.rec-benefits li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+/* --- BUTTONS --- */
+.card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; }
+
+.select-plan-btn {
+  background: #2563eb; color: white; border: none; padding: 12px;
+  border-radius: 8px; font-weight: 700; cursor: pointer; transition: background 0.2s; width: 100%;
+}
+.select-plan-btn:hover { background: #1d4ed8; }
+.btn-owned { background: #16a34a !important; cursor: default !important; opacity: 0.9; }
+
+.details-btn {
+  background: white; border: 2px solid #e2e8f0; color: #475569;
+  border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.2s; width: 100%;
+}
+.details-btn:hover { background: #f8fafc; border-color: #94a3b8; color: #1e293b; }
+
+.compare-toggle {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 15px; cursor: pointer; color: #64748b; 
+  font-size: 0.9rem; font-weight: 600;
+  justify-content: flex-start;
+}
+.compare-toggle input { cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb; }
+
+/* --- STICKY COMPARE BAR --- */
+.compare-bar-fixed {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+  border-top: 1px solid #e2e8f0; box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
+  padding: 15px 0; z-index: 9000; animation: slideInRight 0.3s ease-out;
+}
+.compare-content {
+  max-width: 1200px; margin: 0 auto; padding: 0 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.compare-text { font-weight: 700; color: #334155; font-size: 1.1rem; }
+.badge { background: #2563eb; color: white; padding: 4px 12px; border-radius: 20px; margin-right: 12px; font-size: 0.9rem; }
+.compare-buttons { display: flex; gap: 15px; }
+.btn-compare-action { background: #0f172a; color: white; padding: 10px 28px; border-radius: 30px; border: none; font-weight: 700; cursor: pointer; }
+.btn-clear { background: transparent; color: #ef4444; border: 1px solid #fee2e2; padding: 8px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; }
+
+/* --- BUY POPUP (DRAWER) --- */
+.drawer-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.6); z-index: 10000; display: flex; justify-content: flex-end; backdrop-filter: blur(3px);
+}
+.drawer-content {
+  width: 480px; max-width: 90%; height: 100%; background: white;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10001;
+}
+.drawer-header {
+  padding: 25px; border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.drawer-header h3 { margin: 0; font-size: 1.5rem; color: #0f172a; }
+.close-icon { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #94a3b8; transition: color 0.2s; }
+.close-icon:hover { color: #ef4444; }
+
+.drawer-body { padding: 30px; overflow-y: auto; flex: 1; }
+
+/* ✅ UPDATED: Pre-Buy Styles */
+.plan-summary {
+  background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px;
+  border: 1px solid #e2e8f0; text-align: left;
+}
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 1rem; color: #475569; }
+.summary-row strong { color: #0f172a; }
+
+.popup-slider-section { 
+  margin-bottom: 25px; background: white; padding: 20px; border-radius: 16px; 
+  border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+}
+.popup-slider-label { 
+  font-weight: 700; color: #334155; margin-bottom: 15px; 
+  display: flex; justify-content: space-between; align-items: center;
+}
+.custom-range { 
+  width: 100%; accent-color: #2563eb; cursor: pointer; height: 6px; 
+  background: #e2e8f0; border-radius: 5px; outline: none; margin-bottom: 15px; 
+}
+
+.quick-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill-btn {
+    flex: 1; padding: 10px; font-size: 0.9rem; border: 1px solid #cbd5e1;
+    background: white; color: #64748b; border-radius: 8px; cursor: pointer; 
+    font-weight: 600; text-align: center; min-width: 60px;
+}
+.pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
+.pill-btn.selected { 
+  background: #eff6ff; color: #2563eb; border-color: #2563eb; 
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); 
+}
+
+/* Total Price Section */
+.price-breakdown-box {
+  background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px;
+  border-radius: 12px; margin-bottom: 25px;
+}
+.total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 800; font-size: 1.5rem; color: #166534;
+}
+.total-row span:first-child { font-size: 1rem; color: #15803d; font-weight: 600; }
+
+.btn-confirm-pay {
+  width: 100%; background: #16a34a; color: white; padding: 16px; border: none;
+  border-radius: 12px; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2); transition: transform 0.2s;
+}
+.btn-confirm-pay:hover { transform: translateY(-2px); background: #15803d; }
+
+/* --- COMPARE MODAL --- */
+.modal-overlay-center {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6); z-index: 10000;
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+}
+.modal-box {
+  background: white; padding: 40px; border-radius: 20px;
+  width: 90%; max-width: 1100px; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative;
+  animation: fadeInUp 0.3s ease-out;
+}
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.compare-table th, .compare-table td { padding: 16px; border: 1px solid #e2e8f0; text-align: center; vertical-align: middle; }
+.compare-table th { background: #f8fafc; color: #475569; text-transform: uppercase; font-size: 0.85rem; font-weight: 700; text-align: left; }
+.compare-table td:first-child { text-align: left; font-weight: 600; color: #334155; background: #fcfcfc; }
+.highlight-best { background-color: #dcfce7 !important; color: #166534; font-weight: 700; border-color: #bbf7d0 !important; }
+
+/* Success */
+.success-step { text-align: center; padding-top: 40px; }
+.success-icon { font-size: 5rem; margin-bottom: 20px; animation: fadeInUp 0.5s; }
+.btn-done {
+  width: 100%; background: #2563eb; color: white; padding: 14px; border: none;
+  border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+}
+/* src/components/Recommendations/Recommendations.css */
+
+/* ... (Keep all existing styles for Layout, Header, Cards, and Compare Bar) ... */
+
+/* --- ✅ NEW: RECEIPT STYLE BUY POPUP --- */
+
+.drawer-content {
+  width: 500px; /* Slightly wider for receipt feel */
+  max-width: 95%; background: #f8fafc; /* Light gray background for contrast */
+}
+
+.drawer-header {
+  background: white; padding: 25px 30px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.drawer-body { padding: 30px; }
+
+/* The Receipt Card */
+.receipt-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.receipt-header {
+  background: linear-gradient(to right, #1e293b, #0f172a);
+  color: white; padding: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.receipt-header h4 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #f8fafc; }
+.provider-badge { 
+  background: rgba(255,255,255,0.2); padding: 4px 10px; 
+  border-radius: 4px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; 
+}
+
+/* Config Section (Slider) */
+.receipt-config { padding: 25px 20px; border-bottom: 1px dashed #cbd5e1; }
+.config-label { 
+  display: flex; justify-content: space-between; margin-bottom: 15px; 
+  font-size: 0.9rem; color: #64748b; font-weight: 600;
+}
+.config-val { color: #2563eb; font-size: 1.1rem; font-weight: 700; }
+
+.custom-range { 
+  width: 100%; height: 6px; background: #e2e8f0; border-radius: 5px; 
+  outline: none; accent-color: #2563eb; cursor: pointer; margin-bottom: 15px;
+}
+
+.quick-pills { display: flex; gap: 8px; justify-content: space-between; }
+.pill-btn {
+  flex: 1; padding: 8px 0; border: 1px solid #e2e8f0; background: white;
+  border-radius: 6px; font-size: 0.8rem; color: #64748b; cursor: pointer;
+  transition: all 0.2s; font-weight: 600;
+}
+.pill-btn:hover { border-color: #94a3b8; color: #334155; }
+.pill-btn.selected { 
+  background: #eff6ff; border-color: #2563eb; color: #2563eb; 
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15); 
+}
+
+/* Financial Breakdown */
+.receipt-breakdown { padding: 20px; background: #fff; }
+.line-item { 
+  display: flex; justify-content: space-between; margin-bottom: 10px; 
+  font-size: 0.95rem; color: #475569; 
+}
+.line-item span:last-child { font-weight: 600; color: #1e293b; }
+
+.total-separator { 
+  height: 1px; background: none; border-top: 2px dashed #cbd5e1; 
+  margin: 15px 0; 
+}
+
+.receipt-total { 
+  display: flex; justify-content: space-between; align-items: center; 
+}
+.receipt-total .label { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.receipt-total .amount { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
+
+/* Footer Elements */
+.policy-benefits-tags {
+  display: flex; gap: 10px; margin-bottom: 25px; justify-content: center;
+}
+.benefit-tag {
+  font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;
+  border-radius: 20px; display: flex; align-items: center; gap: 5px;
+}
+
+.btn-confirm-pay {
+  width: 100%; background: #2563eb; color: white; padding: 16px; border: none;
+  border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+  transition: transform 0.2s; display: flex; justify-content: center; gap: 10px;
+}
+.btn-confirm-pay:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+.secure-badge {
+  text-align: center; margin-top: 15px; font-size: 0.85rem; color: #94a3b8;
+  display: flex; justify-content: center; gap: 8px; align-items: center;
+}

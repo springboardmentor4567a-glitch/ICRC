@@ -1,0 +1,114 @@
+/* src/components/Calculators/PremiumCalculator.css */
+
+.calc-page-container {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.calculator-wrapper { max-width: 1100px; margin: 0 auto; }
+
+.calc-main-title {
+    text-align: center; color: #1e293b; margin-bottom: 40px; font-size: 2.5rem; font-weight: 700;
+}
+
+.calculator-layout { display: flex; gap: 40px; align-items: flex-start; }
+
+/* Left Form */
+.calc-left {
+    flex: 1.4; background: white; padding: 40px; border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;
+}
+
+.form-group { margin-bottom: 30px; }
+.form-group label { display: block; font-weight: 700; color: #475569; font-size: 0.95rem; margin-bottom: 12px; }
+
+/* Inputs */
+.type-selector { display: flex; gap: 10px; background: #f1f5f9; padding: 5px; border-radius: 12px; }
+.type-btn { flex: 1; border: none; background: transparent; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #64748b; transition: all 0.2s; }
+.type-btn.active { background: white; color: #2563eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+.standard-select { width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; color: #1e293b; background: white; outline: none; }
+.slider-input-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.custom-slider { flex: 1; accent-color: #2563eb; cursor: pointer; height: 6px; }
+.number-box { width: 80px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-weight: 700; color: #2563eb; }
+.number-box.large { width: 130px; }
+
+.quick-select-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.quick-btn { flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; background: white; border-radius: 20px; color: #64748b; cursor: pointer; font-size: 0.85rem; font-weight: 600; min-width: 60px; text-align: center; }
+.quick-btn:hover { border-color: #94a3b8; color: #334155; }
+.quick-btn.selected { background: #eff6ff; color: #2563eb; border-color: #2563eb; }
+
+/* Right Result Card */
+.calc-right { flex: 1; }
+.result-card {
+    background: white; border-radius: 20px; box-shadow: 0 20px 50px -10px rgba(0,0,0,0.1); 
+    border: 1px solid #f1f5f9; position: sticky; top: 20px; overflow: hidden; text-align: center;
+}
+.result-card::before { content: ''; display: block; height: 8px; width: 100%; background: linear-gradient(90deg, #2563eb, #06b6d4); }
+.result-header { padding: 30px 30px 10px; }
+.plan-label { font-size: 0.8rem; font-weight: 800; color: #94a3b8; letter-spacing: 1.5px; text-transform: uppercase; }
+.result-header h3 { margin: 10px 0 0; color: #1e293b; font-size: 1.4rem; font-weight: 700; }
+
+.main-price-box { padding: 20px 0; margin: 10px 30px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; }
+.price-label { font-size: 0.9rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px; }
+.price-value { font-size: 2.8rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+.price-sub { font-size: 0.9rem; color: #16a34a; font-weight: 600; display: block; margin-top: 5px; }
+
+.features-list { padding: 20px 40px; text-align: left; }
+.feature-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; color: #475569; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px; }
+.feature-item strong { color: #1e293b; }
+
+.apply-btn {
+    width: 100%; background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    color: white; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.3);
+}
+.apply-btn:hover { transform: translateY(-2px); }
+
+.text-link-btn {
+    background: none; border: none; color: #64748b; font-weight: 600; cursor: pointer; text-decoration: underline; font-size: 0.9rem;
+}
+.text-link-btn:hover { color: #2563eb; }
+
+/* --- POPUP (DRAWER) STYLES --- */
+.drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; justify-content: flex-end; backdrop-filter: blur(3px); }
+.drawer-content { width: 500px; max-width: 90%; height: 100%; background: #f8fafc; box-shadow: -10px 0 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-header { background: white; padding: 25px 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.drawer-header h3 { margin: 0; font-size: 1.5rem; color: #0f172a; }
+.close-icon { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #94a3b8; }
+.drawer-body { padding: 30px; overflow-y: auto; flex: 1; }
+
+/* Receipt Card in Drawer */
+.receipt-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px; }
+.receipt-header { background: linear-gradient(to right, #1e293b, #0f172a); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+.receipt-header h4 { margin: 0; font-size: 1.1rem; }
+.provider-badge { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.receipt-breakdown { padding: 20px; background: #fff; }
+.line-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #475569; }
+.total-separator { height: 1px; border-top: 2px dashed #cbd5e1; margin: 15px 0; }
+.receipt-total { display: flex; justify-content: space-between; align-items: center; }
+.receipt-total .label { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.receipt-total .amount { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
+
+.btn-confirm-pay { width: 100%; background: #2563eb; color: white; padding: 16px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
+.btn-confirm-pay:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+/* Animation */
+@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@media (max-width: 900px) { .calculator-layout { flex-direction: column; } }
+/* Add this to your existing CSS file */
+
+.btn-owned {
+    background: #16a34a !important; /* Green */
+    cursor: default !important;
+    opacity: 0.9;
+    color: white;
+    width: 100%;
+    padding: 16px; 
+    border-radius: 12px; 
+    font-size: 1.1rem; 
+    font-weight: 700;
+    border: none;
+    box-shadow: none !important;
+}
