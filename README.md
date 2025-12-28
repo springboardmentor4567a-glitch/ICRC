@@ -1,70 +1,91 @@
-# Getting Started with Create React App
+# Insurez - Insurance Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a full-stack web application with a React frontend and a Python/Flask backend.
 
-## Available Scripts
+## Tech Stack
 
-In the project directory, you can run:
+- **Frontend:** React
+- **Backend:** Python, Flask, SQLAlchemy
+- **Database:** PostgreSQL
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js and npm
+- Python and pip
+- A running PostgreSQL server
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Setup Instructions
 
-### `npm test`
+### 1. Backend Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+First, navigate into the backend directory.
 
-### `npm run build`
+```bash
+cd backend
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Create and activate a Python virtual environment (optional but highly recommended).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# For macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# For Windows
+python -m venv venv
+venv\\Scripts\\activate
+```
 
-### `npm run eject`
+Install the required Python packages.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+pip install -r requirements.txt
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Configure your environment variables. Create a `.env` file in the `backend` directory. You can copy the example file to get started.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+cp .env.example .env
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Now, edit the `.env` file with your PostgreSQL credentials. It should look like this:
 
-## Learn More
+```
+DATABASE_URL=postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/insurez_db
+JWT_SECRET_KEY=your-super-secret-key-change-this
+FLASK_ENV=development
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+> **Important:** Make sure you have already created a database named `insurez_db` in PostgreSQL.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Run the script to create the database tables.
 
-### Code Splitting
+```bash
+python setup_db.py
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Finally, start the backend server.
 
-### Analyzing the Bundle Size
+```bash
+python run.py
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+The server will start on `http://127.0.0.1:5000`.
 
-### Making a Progressive Web App
+### 2. Frontend Setup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Open a **new terminal** and navigate to the project's root directory.
 
-### Advanced Configuration
+Install the Node.js dependencies.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+npm install
+```
 
-### Deployment
+Start the frontend development server.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```bash
+npm start
+```
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The application will automatically open in your browser at `http://localhost:3000`.
