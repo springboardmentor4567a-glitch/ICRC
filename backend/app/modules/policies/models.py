@@ -1,0 +1,56 @@
+from app.extensions import db
+from datetime import datetime
+
+class Provider(db.Model):
+    __tablename__ = 'providers'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(50))
+    # Relationship
+    policies = db.relationship('Policy', backref='provider', lazy=True)
+
+class Policy(db.Model):
+    __tablename__ = 'policies'
+    id = db.Column(db.Integer, primary_key=True)
+    provider_id = db.Column(db.Integer, db.ForeignKey('providers.id'))
+    policy_type = db.Column(db.String(20))
+    title = db.Column(db.String(150))
+    premium = db.Column(db.Float)
+    term_months = db.Column(db.Integer)
+    coverage = db.Column(db.JSON)
+    deductible = db.Column(db.Float, default=0)
+    waiting_period_days = db.Column(db.Integer, default=30)
+    tnc_url = db.Column(db.String(255))
+    
+    # Relationship
+    user_policies = db.relationship('UserPolicy', back_populates='policy', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'provider': self.provider.name if self.provider else "Unknown",
+            'type': self.policy_type,
+            'title': self.title,
+            'coverage': self.coverage,
+            'premium': self.premium,
+            'term': f"{self.term_months} Months",
+            'deductible': self.deductible
+        }
+
+class UserPolicy(db.Model):
+    __tablename__ = 'user_policies'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    policy_id = db.Column(db.Integer, db.ForeignKey('policies.id'))
+    policy_number = db.Column(db.String(50), unique=True)
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime)
+    premium_amount = db.Column(db.Float)
+    coverage_amount = db.Column(db.Float)
+    remaining_sum_insured = db.Column(db.Float)
+    status = db.Column(db.String(20), default='active')
+    auto_renew = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    policy = db.relationship('Policy', back_populates='user_policies')
+    user = db.relationship('User', backref='user_policies')
