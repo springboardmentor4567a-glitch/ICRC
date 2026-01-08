@@ -21,16 +21,13 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-# 1. Load Environment Variables
 load_dotenv()
 
-# --- CONFIGURATION ---
 SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-this-in-production")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# --- EMAIL CONFIGURATION ---
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = os.getenv("MAIL_USERNAME")
@@ -38,39 +35,29 @@ SENDER_PASSWORD = os.getenv("MAIL_PASSWORD")
 
 app = FastAPI(title="ICRA API")
 
-# INITIALIZE RATE LIMITER
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# 2. Setup Database
 models.Base.metadata.create_all(bind=database.engine)
-
-# --- HELPER: Convert cover string to integer ---
 def convert_cover_to_amount(cover_str):
     """Convert cover string like '50 Lakhs', '1 Crore' to integer amount"""
     cover_str = cover_str.lower().strip()
     if "crore" in cover_str or "crores" in cover_str:
-        num = float(cover_str.split()[0]) * 10000000  # 1 crore = 10 million
+        num = float(cover_str.split()[0]) * 10000000
     elif "lakh" in cover_str or "lakhs" in cover_str:
-        num = float(cover_str.split()[0]) * 100000  # 1 lakh = 100,000
+        num = float(cover_str.split()[0]) * 100000
     elif "$" in cover_str:
-        # Convert USD to INR (approx 80 INR per USD)
         num = float(cover_str.replace("$", "").replace(",", "")) * 80
     else:
-        # Default fallback
         num = 500000
     return int(num)
 
-# --- SEED DATA FUNCTION (MASSIVE GENERATOR) ---
 def seed_policies(db: Session):
-    # Check if data exists. If we have less than 10, let's re-seed to get 100+
     if db.query(models.Policy).count() > 10:
         return 
 
     print("🌱 Generating 100+ Policies for the Marketplace...")
-
-    # --- DATA POOLS ---
     providers = ["Tata AIA", "HDFC ERGO", "ICICI Lombard", "Bajaj Allianz", "Star Health", "Max Life", "SBI General", "Acko", "Niva Bupa", "Aditya Birla", "Reliance General", "Digit"]
     
     life_names = ["Sampoorna Raksha", "iSelect Smart", "Life Goal", "Protect Plus", "Mega Life", "Future Secure", "Term Shield", "Family First", "Legacy Plan", "Elite Term"]
@@ -81,8 +68,6 @@ def seed_policies(db: Session):
     categories = ["Life", "Health", "Auto", "Travel", "Business"]
     
     new_policies = []
-
-    # --- 1. GENERATE LIFE INSURANCE (30 Plans) ---
     for i in range(30):
         prov = random.choice(providers)
         name = f"{random.choice(life_names)} {random.choice(['Plus', 'Pro', 'Max', 'Gold', 'Premium'])}"
@@ -96,7 +81,6 @@ def seed_policies(db: Session):
             features="Whole Life Option; Terminal Illness Cover; Tax Benefits"
         ))
 
-    # --- 2. GENERATE HEALTH INSURANCE (40 Plans) ---
     for i in range(40):
         prov = random.choice(providers)
         name = f"{random.choice(health_names)} {random.choice(['Titanium', 'Platinum', 'Silver', 'Family', 'Individual'])}"
@@ -110,14 +94,12 @@ def seed_policies(db: Session):
             features="No Room Rent Capping; Restore Benefit; Free Health Checkup"
         ))
 
-    # --- 3. GENERATE AUTO INSURANCE (30 Plans) ---
     for i in range(30):
         prov = random.choice(providers)
         name = f"{random.choice(auto_names)} {random.choice(['Comprehensive', 'Third Party', 'Zero Dep'])}"
         premium = random.randint(2000, 15000)
-        # Generate IDV between 2-15 lakhs
         idv_lakhs = random.randint(2, 15)
-        cover_amount = idv_lakhs * 100000  # Convert lakhs to amount
+        cover_amount = idv_lakhs * 100000
         
         new_policies.append(models.Policy(
             policy_name=name, provider=prov, category="Auto", premium=premium, cover_amount=cover_amount,
@@ -125,7 +107,6 @@ def seed_policies(db: Session):
             features="24x7 RSA; Engine Protection; Zero Depreciation"
         ))
 
-    # --- 4. GENERATE TRAVEL/BUSINESS (15 Plans) ---
     for i in range(15):
         cat = random.choice(["Travel", "Business"])
         prov = random.choice(providers)
@@ -141,45 +122,38 @@ def seed_policies(db: Session):
             features="Instant Policy; Covid-19 Cover; Minimal Documentation"
         ))
 
-    # Add all to DB
     for p in new_policies:
         db.add(p)
     
     db.commit()
     print(f"✅ Database Populated with {len(new_policies)} Policies!")
     
-    # --- ADD THIS: SEED MASTER ADMIN ---
     admin_email = "admin@icra.com"
     existing_admin = db.query(models.User).filter(models.User.email == admin_email).first()
     
     if not existing_admin:
         print("🛡️ Creating Master Admin Account...")
-        hashed_pwd = pwd_context.hash("Admin@123") # Default Password
+        hashed_pwd = pwd_context.hash("Admin@123")
         admin_user = models.User(
             name="Master Admin",
             email=admin_email,
             password=hashed_pwd,
-            role="admin", # <--- The Magic Key
+            role="admin",
             dob=datetime.utcnow()
         )
         db.add(admin_user)
         db.commit()
         print(f"✅ Master Admin created: {admin_email} / Admin@123")
 
-# --- STARTUP EVENT ---
 @app.on_event("startup")
 def startup_event():
-    # Create Tables
     models.Base.metadata.create_all(bind=database.engine)
     
-    # Run Seeder
     db = database.SessionLocal()
     try:
         seed_policies(db)
     finally:
         db.close()
-
-# 3. CORS Middleware (Allow Frontend to talk to Backend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -188,12 +162,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 4. Security Tools
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 otp_storage = {}
-
-# --- PASSWORD VALIDATION ---
 def validate_password_strength(password: str):
     """
     Enforces: At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char.
@@ -209,8 +180,6 @@ def validate_password_strength(password: str):
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
         raise HTTPException(status_code=400, detail="Password must contain at least one special character")
     return True
-
-# --- HELPER FUNCTIONS ---
 
 def create_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
@@ -245,7 +214,6 @@ def check_admin_access(user: models.User = Depends(get_current_user)):
     return user
 
 def send_email_otp(to_email: str, otp: str):
-    # If no credentials in .env, mock the email (print to console)
     if not SENDER_EMAIL or not SENDER_PASSWORD:
         print(f"\n[MOCK EMAIL] To: {to_email} | OTP: {otp}\n")
         return True
@@ -280,10 +248,6 @@ def send_email_otp(to_email: str, otp: str):
         print(f"Email Error: {e}")
         return False
 
-# ==========================
-# --- AUTH ENDPOINTS ---
-# ==========================
-
 @app.post("/auth/send-otp")
 def send_otp(request: schemas.EmailRequest, db: Session = Depends(database.get_db)):
     if db.query(models.User).filter(models.User.email == request.email).first():
@@ -292,7 +256,6 @@ def send_otp(request: schemas.EmailRequest, db: Session = Depends(database.get_d
     otp = str(random.randint(100000, 999999))
     otp_storage[request.email] = otp
     
-    # Debug print for development
     print(f"------------\n[DEBUG] OTP for {request.email}: {otp}\n------------")
     
     if send_email_otp(request.email, otp):
@@ -302,21 +265,16 @@ def send_otp(request: schemas.EmailRequest, db: Session = Depends(database.get_d
 
 @app.post("/auth/register", response_model=schemas.Token)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    # 1. Check OTP (If provided)
     if user.otp:
         stored_otp = otp_storage.get(user.email)
         if not stored_otp or stored_otp != user.otp:
             raise HTTPException(status_code=400, detail="Invalid or expired OTP")
         del otp_storage[user.email]
 
-    # 2. Check existing user
     if db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # 3. Validate Password Strength
     validate_password_strength(user.password)
-    
-    # 4. Create User
     hashed_password = pwd_context.hash(user.password)
     new_user = models.User(
         name=user.name,
@@ -345,7 +303,6 @@ def login(request: Request, user: schemas.UserLogin, db: Session = Depends(datab
     if not db_user or not pwd_context.verify(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Invalid email or password")
     
-    # --- ADD THIS: Update Last Login ---
     db_user.last_login = datetime.utcnow()
     db.commit()
     
@@ -392,14 +349,9 @@ def refresh_token(request: schemas.RefreshTokenRequest, db: Session = Depends(da
 
 @app.post("/auth/logout")
 def logout(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # Force the user's last_login to a past date so they don't show as online
     user.last_login = datetime.utcnow() - timedelta(days=365) 
     db.commit()
     return {"msg": "Logged out successfully"}
-
-# ==========================
-# --- POLICY ENDPOINTS ---
-# ==========================
 
 @app.get("/policies", response_model=List[schemas.PolicyResponse])
 def get_policies(category: Optional[str] = None, db: Session = Depends(database.get_db)):
@@ -409,13 +361,10 @@ def get_policies(category: Optional[str] = None, db: Session = Depends(database.
     
     policies = query.all()
     
-    # Inject Active User Count
     results = []
     for p in policies:
-        # Count how many users have bought this policy
         count = db.query(models.UserPolicy).filter(models.UserPolicy.policy_id == p.id).count()
         
-        # We convert to a dictionary to append the new field without changing the DB Model
         p_data = p.__dict__.copy()
         p_data['active_users'] = count
         results.append(p_data)
@@ -467,7 +416,6 @@ def buy_policy(policy_id: int, user: models.User = Depends(get_current_user), db
 
 @app.get("/my-policies", response_model=List[schemas.MyPolicyResponse])
 def get_my_policies(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # Use joinedload to fetch the Policy details along with the purchase record
     purchases = db.query(models.UserPolicy)\
                   .options(joinedload(models.UserPolicy.policy))\
                   .filter(models.UserPolicy.user_id == user.id)\
@@ -476,7 +424,6 @@ def get_my_policies(user: models.User = Depends(get_current_user), db: Session =
 
 @app.delete("/my-policies/{purchase_id}")
 def delete_policy(purchase_id: int, user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # Find the purchase record (UserPolicy row)
     policy_entry = db.query(models.UserPolicy).filter(
         models.UserPolicy.id == purchase_id,
         models.UserPolicy.user_id == user.id
@@ -489,9 +436,24 @@ def delete_policy(purchase_id: int, user: models.User = Depends(get_current_user
     db.commit()
     return {"message": "Policy removed from your portfolio"}
 
-# ==========================
-# --- USER PROFILE ENDPOINTS ---
-# ==========================
+@app.get("/user/me", response_model=schemas.UserResponse)
+def get_current_user_details(user: models.User = Depends(get_current_user)):
+    return user
+
+@app.put("/user/details", response_model=schemas.UserResponse)
+def update_user_details(
+    user_data: schemas.UserUpdate,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    if user_data.name:
+        user.name = user_data.name
+    if user_data.dob:
+        user.dob = user_data.dob
+    
+    db.commit()
+    db.refresh(user)
+    return user
 
 @app.put("/user/profile", response_model=schemas.UserResponse)
 def update_risk_profile(
@@ -499,7 +461,6 @@ def update_risk_profile(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(database.get_db)
 ):
-    # Convert Pydantic model to JSON-compatible dict
     user.risk_profile = profile_data.dict()
     
     db.commit()
@@ -508,16 +469,13 @@ def update_risk_profile(
 
 @app.get("/recommendations")
 def get_recommendations(user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # 1. Run the engine
     recommendations.generate_recommendations(user.id, db)
 
-    # 2. Fetch results
     recs = db.query(models.Recommendation)\
              .filter(models.Recommendation.user_id == user.id)\
              .order_by(models.Recommendation.score.desc())\
              .all()
 
-    # 3. Format response
     results = []
     for rec in recs:
         results.append({
@@ -527,10 +485,6 @@ def get_recommendations(user: models.User = Depends(get_current_user), db: Sessi
         })
 
     return results
-
-# ==========================
-# --- NOTIFICATION ENDPOINTS ---
-# ==========================
 
 @app.get("/notifications", response_model=List[schemas.Notification])
 def get_notifications(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -552,14 +506,9 @@ def delete_notification(notif_id: int, db: Session = Depends(database.get_db), c
     db.commit()
     return {"msg": "Notification deleted"}
 
-# ==========================
-# --- CLAIMS ENDPOINTS ---
-# ==========================
-
 @app.post("/claims")
 @limiter.limit("10/minute")
 def file_claim(request: Request, claim: schemas.ClaimCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    # Verify the user owns the policy
     purchase = db.query(models.UserPolicy).filter(models.UserPolicy.id == claim.purchase_id, models.UserPolicy.user_id == current_user.id).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="Policy not found")
@@ -584,7 +533,6 @@ def file_claim(request: Request, claim: schemas.ClaimCreate, db: Session = Depen
     
     db.commit()
     
-    # --- ADD THIS LINE FOR MILESTONE 4 ---
     fraud_engine.run_fraud_check(db, new_claim.id)
     
     return {"msg": "Claim submitted"}
@@ -601,7 +549,6 @@ def delete_claim(claim_id: int, db: Session = Depends(database.get_db), current_
     
     db.delete(claim)
     
-    # Log the deletion
     notif = models.Notification(
         user_id=current_user.id,
         title="Claim Record Deleted",
@@ -615,15 +562,11 @@ def delete_claim(claim_id: int, db: Session = Depends(database.get_db), current_
 
 @app.put("/renew/{purchase_id}")
 def renew_policy(purchase_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    # 1. Find the policy
     purchase = db.query(models.UserPolicy).filter(models.UserPolicy.id == purchase_id, models.UserPolicy.user_id == current_user.id).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="Policy not found")
     
-    # 2. Update Purchase Date to Today (Simulating a 1-year extension)
     purchase.purchase_date = datetime.utcnow()
-    
-    # 3. Add Notification
     notif = models.Notification(
         user_id=current_user.id,
         title="Policy Renewed",
@@ -634,10 +577,6 @@ def renew_policy(purchase_id: int, db: Session = Depends(database.get_db), curre
     
     db.commit()
     return {"msg": "Policy renewed successfully"}
-
-# ==========================
-# --- MILESTONE 4: ADMIN & FRAUD ---
-# ==========================
 
 @app.post("/admin/scan/{claim_id}")
 def trigger_fraud_scan(claim_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
@@ -653,13 +592,12 @@ def get_admin_stats(user: models.User = Depends(check_admin_access), db: Session
     pending_claims = db.query(models.Claim).filter(models.Claim.status == "Pending").count()
     flagged_claims = db.query(models.FraudFlag).count()
     
-    # --- UPDATED: 5 Minutes Window ---
     five_mins_ago = datetime.utcnow() - timedelta(minutes=5)
     online_users = db.query(models.User).filter(models.User.last_login >= five_mins_ago).count()
     
     return {
         "users": total_users,
-        "online_users": online_users, # <--- Return this new field
+        "online_users": online_users,
         "claims": total_claims,
         "pending": pending_claims,
         "fraud_alerts": flagged_claims
@@ -668,14 +606,11 @@ def get_admin_stats(user: models.User = Depends(check_admin_access), db: Session
 @app.get("/admin/claims-feed")
 def get_admin_claims(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
     """Fetches all claims WITH their fraud flags attached"""
-    # 1. Get all claims
     claims = db.query(models.Claim).order_by(models.Claim.created_at.desc()).all()
     results = []
     
     for c in claims:
-        # 2. Get User Name
         user = db.query(models.User).filter(models.User.id == c.user_id).first()
-        # 3. Get Flags
         flags = db.query(models.FraudFlag).filter(models.FraudFlag.claim_id == c.id).all()
         
         results.append({
@@ -705,7 +640,6 @@ def process_claim_action(claim_id: int, payload: schemas.ClaimAction, user: mode
         claim.status = "Rejected"
         reason = payload.reason or "Policy criteria not met."
         
-        # SMART TRICK: Append the Admin Note to the description so it appears in User History without DB changes
         if "|| [Admin Note:" not in claim.description:
             claim.description = f"{claim.description} || [Admin Note: {reason}]"
             
@@ -714,7 +648,6 @@ def process_claim_action(claim_id: int, payload: schemas.ClaimAction, user: mode
     else:
         raise HTTPException(status_code=400, detail="Invalid action")
         
-    # Create Notification for User
     notif = models.Notification(
         user_id=claim.user_id,
         title=f"Claim {claim.status}",
@@ -724,8 +657,6 @@ def process_claim_action(claim_id: int, payload: schemas.ClaimAction, user: mode
     db.add(notif)
     db.commit()
     return {"msg": f"Claim {payload.action} successfully"}
-
-# --- ADMIN CONTROL CENTER ENDPOINTS ---
 
 @app.post("/admin/policies")
 def create_policy(policy: schemas.PolicyCreate, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
@@ -740,7 +671,6 @@ def update_policy(policy_id: int, policy: schemas.PolicyCreate, user: models.Use
     if not db_policy:
          raise HTTPException(status_code=404, detail="Policy not found")
     
-    # Update fields
     db_policy.category = policy.category
     db_policy.provider = policy.provider
     db_policy.policy_name = policy.policy_name
@@ -754,7 +684,6 @@ def update_policy(policy_id: int, policy: schemas.PolicyCreate, user: models.Use
 
 @app.delete("/admin/policies/{policy_id}")
 def delete_policy_admin(policy_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
-    # Check if used
     usage = db.query(models.UserPolicy).filter(models.UserPolicy.policy_id == policy_id).count()
     if usage > 0:
         raise HTTPException(status_code=400, detail=f"Cannot delete: Active in {usage} user portfolios.")
@@ -767,12 +696,30 @@ def delete_policy_admin(policy_id: int, user: models.User = Depends(check_admin_
 def get_all_users(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
     return db.query(models.User).all()
 
+@app.get("/admin/users/{user_id}/activity")
+def get_user_activity_admin(user_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    target_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    policies = db.query(models.UserPolicy)\
+                 .options(joinedload(models.UserPolicy.policy))\
+                 .filter(models.UserPolicy.user_id == user_id)\
+                 .all()
+
+    claims = db.query(models.Claim).filter(models.Claim.user_id == user_id).all()
+
+    return {
+        "user": target_user,
+        "policies": policies,
+        "claims": claims
+    }
+
 @app.delete("/admin/users/{user_id}")
 def ban_user(user_id: int, user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
     if user_id == user.id:
         raise HTTPException(status_code=400, detail="You cannot ban yourself.")
     
-    # Cascade delete (Or just delete user, sqlalchemy handles cascade if set, otherwise manual)
     db.query(models.UserPolicy).filter(models.UserPolicy.user_id == user_id).delete()
     db.query(models.User).filter(models.User.id == user_id).delete()
     db.commit()

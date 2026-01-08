@@ -14,14 +14,11 @@ function App() {
   const [user, setUser] = useState(null);
   const [currentView, setCurrentView] = useState('dashboard');
 
-  // Navigation States
   const [autoOpenPolicyId, setAutoOpenPolicyId] = useState(null);
-  const [checkoutPolicy, setCheckoutPolicy] = useState(null); // <--- Holds policy data for checkout
+  const [checkoutPolicy, setCheckoutPolicy] = useState(null);
 
-  // Welcome Animation State
   const [welcomeShown, setWelcomeShown] = useState(false);
 
-  // History API for Back Button
   useEffect(() => {
     const handlePopState = (event) => {
       if (event.state && event.state.view) {
@@ -38,7 +35,6 @@ function App() {
     setUser(userData);
     setWelcomeShown(false);
     
-    // Check ROLE from backend response
     if (userData.role === 'admin') {
          setCurrentView('admin');
          window.history.pushState({ view: 'admin' }, '');
@@ -49,7 +45,6 @@ function App() {
   };
 
   const handleLogout = async () => {
-    // --- NEW: Tell backend to mark us offline ---
     try {
         const token = localStorage.getItem('access_token');
         if (token) {
@@ -59,7 +54,6 @@ function App() {
             });
         }
     } catch (e) { console.error("Logout error", e); }
-    // ---------------------------------------------
 
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -69,23 +63,20 @@ function App() {
     setWelcomeShown(false);
   };
 
-  // Unified Navigation Handler
-  // data can be: policyId (for FindInsurance) OR policyObject (for Checkout)
   const handleNavigate = (view, data = null) => {
     setCurrentView(view);
 
     if (view === 'find-insurance' && data) {
-      setAutoOpenPolicyId(data); // data is ID
+      setAutoOpenPolicyId(data);
     }
 
     if (view === 'checkout' && data) {
-      setCheckoutPolicy(data); // data is Policy Object
+      setCheckoutPolicy(data);
     }
 
     window.history.pushState({ view }, '');
   };
 
-  // --- RENDER LOGIC ---
   return (
     <div className="w-full h-screen">
       {!user ? (
@@ -111,7 +102,7 @@ function App() {
               onBack={() => handleNavigate('dashboard')}
               autoOpenPolicyId={autoOpenPolicyId}
               onModalClosed={() => setAutoOpenPolicyId(null)}
-              onCheckout={(policy) => handleNavigate('checkout', policy)} // <--- Pass Checkout Handler
+              onCheckout={(policy) => handleNavigate('checkout', policy)}
             />
           )}
           {currentView === 'checkout' && checkoutPolicy && (

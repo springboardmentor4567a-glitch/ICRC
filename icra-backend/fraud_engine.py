@@ -22,8 +22,6 @@ def run_fraud_check(db: Session, claim_id: int):
     
     flags = []
 
-    # --- RULE 1: SUSPICIOUS TIMING (Quick Claim) ---
-    # If claim is filed within 15 days of policy purchase
     days_since_purchase = (claim.created_at - purchase.purchase_date).days
     if days_since_purchase < 15:
         flags.append({
@@ -32,8 +30,6 @@ def run_fraud_check(db: Session, claim_id: int):
             "details": f"Claim filed just {days_since_purchase} days after purchase."
         })
 
-    # --- RULE 2: HIGH CLAIM AMOUNT ---
-    # If claim amount is > 80% of total cover amount
     if claim.claim_amount > (policy.cover_amount * 0.8):
         flags.append({
             "code": "F02_HIGH_VALUE",
@@ -41,8 +37,6 @@ def run_fraud_check(db: Session, claim_id: int):
             "details": f"Claim amount ({claim.claim_amount}) is >80% of cover ({policy.cover_amount})."
         })
 
-    # --- RULE 3: FREQUENT CLAIMANT ---
-    # If user has filed more than 2 claims in the last 6 months
     past_claims = db.query(models.Claim).filter(models.Claim.user_id == claim.user_id).count()
     if past_claims > 2:
         flags.append({
@@ -51,7 +45,6 @@ def run_fraud_check(db: Session, claim_id: int):
             "details": f"User has filed {past_claims} claims previously."
         })
 
-    # --- SAVE FLAGS ---
     for flag in flags:
         new_flag = models.FraudFlag(
             claim_id=claim.id,

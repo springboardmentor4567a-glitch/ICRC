@@ -3,9 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 import re
 
-# --- PROFILE SCHEMA ---
 class RiskProfileUpdate(BaseModel):
-    # Old Fields
     annual_income: Optional[str] = None
     marital_status: Optional[str] = None
     dependents: Optional[str] = None
@@ -13,13 +11,11 @@ class RiskProfileUpdate(BaseModel):
     city: Optional[str] = None
     smoker: Optional[bool] = False
     vehicle_type: Optional[str] = None
-    
-    # NEW FIELDS (Added for Enhanced Profile)
     age: Optional[str] = None
     height: Optional[str] = None
     weight: Optional[str] = None
     alcohol: Optional[str] = None
-    medical_history: Optional[List[str]] = [] # Accepts a list of strings
+    medical_history: Optional[List[str]] = []
     existing_loans: Optional[str] = None
     retirement_age: Optional[str] = None
     vehicle_age: Optional[str] = None
@@ -30,13 +26,16 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: str
-    role: Optional[str] = "user" # <--- ADD THIS
+    role: Optional[str] = "user"
     risk_profile: Optional[dict] = {}
     
     class Config:
-        from_attributes = True  # Fixes the object-to-dict conversion error
+        from_attributes = True
 
-# --- 2. AUTH SCHEMAS ---
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    dob: Optional[datetime] = None
+
 class UserCreate(BaseModel):
     email: str
     name: str
@@ -44,17 +43,14 @@ class UserCreate(BaseModel):
     dob: Optional[datetime] = None
     otp: Optional[str] = None
 
-    # --- SANITIZATION ---
     @validator('name')
     def sanitize_name(cls, v):
-        # Remove any HTML tags or script injections
         if '<script>' in v or '</script>' in v:
             raise ValueError('Invalid characters in name')
         return v.strip()
 
     @validator('email')
     def validate_email_format(cls, v):
-        # Basic Email Regex
         regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         if not re.search(regex, v, re.IGNORECASE):
             raise ValueError('Invalid email format')
@@ -74,9 +70,8 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
-    user: UserResponse  # <--- CHANGED from 'dict' to 'UserResponse' to fix the error!
+    user: UserResponse
 
-# --- 3. POLICY SCHEMAS ---
 class PolicyResponse(BaseModel):
     id: int
     category: str
@@ -86,7 +81,7 @@ class PolicyResponse(BaseModel):
     cover_amount: int
     description: str
     features: str
-    active_users: Optional[int] = 0  # <--- ADD THIS LINE
+    active_users: Optional[int] = 0
     
     class Config:
         from_attributes = True
@@ -94,7 +89,7 @@ class PolicyResponse(BaseModel):
 class MyPolicyResponse(BaseModel):
     id: int
     status: str
-    purchase_date: datetime # Keeps exact time to avoid date errors
+    purchase_date: datetime
     policy: PolicyResponse
     
     class Config:
@@ -117,11 +112,9 @@ class ClaimCreate(BaseModel):
     description: str
     claim_amount: int
 
-    # --- SANITIZATION FOR CLAIMS ---
     @validator('description')
     def sanitize_description(cls, v):
-        # Prevent XSS in claim descriptions
-        clean_text = re.sub(r'<[^>]*>', '', v)  # Removes HTML tags
+        clean_text = re.sub(r'<[^>]*>', '', v)
         return clean_text
 
 class ClaimResponse(ClaimCreate):
@@ -132,7 +125,6 @@ class ClaimResponse(ClaimCreate):
     class Config:
         from_attributes = True
 
-# Add this new schema for creating/editing policies
 class PolicyCreate(BaseModel):
     category: str
     provider: str
@@ -142,7 +134,6 @@ class PolicyCreate(BaseModel):
     description: str
     features: str
 
-# Add this small class for handling the Action payload
 class ClaimAction(BaseModel):
     action: str
     reason: Optional[str] = None

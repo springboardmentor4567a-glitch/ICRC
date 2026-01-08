@@ -3,9 +3,7 @@ def calculate_score(user: models.User, policy: models.Policy):
     reasons = []
     profile = user.risk_profile or {}
 
-    # --- 1. HEALTH LOGIC ---
     if policy.category == "Health":
-        # Check BMI (Weight / Height^2)
         try:
             h = float(profile.get("height", 0)) / 100
             w = float(profile.get("weight", 0))
@@ -17,23 +15,19 @@ def calculate_score(user: models.User, policy: models.Policy):
         except:
             pass
 
-        # Lifestyle
         if profile.get("smoker") or profile.get("alcohol") == "Regular":
             score += 20
             reasons.append("Lifestyle risks detected")
 
-        # Specific Conditions
         conditions = profile.get("medical_history", [])
         if conditions and "None" not in conditions:
             score += 30
             reasons.append(f"Covers history: {', '.join(conditions)}")
 
-    # --- 2. LIFE & FINANCE LOGIC ---
     elif policy.category == "Life":
         loans = float(profile.get("existing_loans", 0))
         deps = int(profile.get("dependents", 0))
         
-        # High Debt = High need for Term Insurance
         if loans > 500000: 
             score += 25
             reasons.append("Essential to cover your existing loans")
@@ -46,7 +40,6 @@ def calculate_score(user: models.User, policy: models.Policy):
             score += 15
             reasons.append("Includes Accidental Rider (Recommended for your job)")
 
-    # --- 3. AUTO LOGIC ---
     elif policy.category == "Auto":
         user_car = profile.get("vehicle_type", "None")
         car_age = int(profile.get("vehicle_age", 0))
@@ -61,8 +54,6 @@ def calculate_score(user: models.User, policy: models.Policy):
         else:
             reasons.append("Standard Comprehensive Plan")
 
-    # --- 4. GENERAL PRIORITY BOOST ---
-    # If policy matches their top goal (cheapest or best cover)
     priority = profile.get("top_priority")
     if priority == "Low Premium" and policy.premium < 10000:
         score += 15

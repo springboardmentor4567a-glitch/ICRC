@@ -12,12 +12,10 @@ class User(Base):
     password = Column(String)
     dob = Column(DateTime)
     
-    # New Fields
-    role = Column(String, default="user") # 'user' or 'admin'
+    role = Column(String, default="user")
     risk_profile = Column(JSON, default={})
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
 
-    # Relationships
     policies = relationship("UserPolicy", back_populates="user")
     recommendations = relationship("Recommendation", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
@@ -84,7 +82,6 @@ class Claim(Base):
 
     purchase = relationship("UserPolicy", back_populates="claims")
 
-# --- MILESTONE 4: FRAUD & ADMIN MODELS ---
 class FraudFlag(Base):
     __tablename__ = "fraud_flags"
 

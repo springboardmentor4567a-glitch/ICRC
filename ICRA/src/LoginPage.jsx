@@ -1,31 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
 const LoginPage = ({ onLoginSuccess }) => {
-    // --- UI STATES (Visuals & Animations) ---
     const [showIntro, setShowIntro] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
-    const [isSignUp, setIsSignUp] = useState(false); // Controls the sliding panel
-    const [showForgot, setShowForgot] = useState(false); // Controls Forgot Password view
-    const [resetSent, setResetSent] = useState(false); // Controls Reset Success view
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [showForgot, setShowForgot] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
 
-    // --- FEEDBACK STATES (Errors & Loading) ---
     const [registerSuccess, setRegisterSuccess] = useState(false);
     const [backendError, setBackendError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // --- FORM DATA STATES ---
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', dob: '' });
     const [forgotEmail, setForgotEmail] = useState('');
 
-    // 1. Intro Animation Logic
     useEffect(() => {
         const timer1 = setTimeout(() => setFadeOut(true), 2000);
         const timer2 = setTimeout(() => setShowIntro(false), 3500);
         return () => { clearTimeout(timer1); clearTimeout(timer2); };
     }, []);
 
-    // 2. Forgot Password Auto-Redirect Logic
     useEffect(() => {
         let timeout;
         if (resetSent) {
@@ -36,18 +31,15 @@ const LoginPage = ({ onLoginSuccess }) => {
         return () => clearTimeout(timeout);
     }, [resetSent]);
 
-    // --- INPUT HANDLERS ---
     const handleLoginChange = (e) => setLoginData({ ...loginData, [e.target.name]: e.target.value });
     const handleRegisterChange = (e) => setRegisterData({ ...registerData, [e.target.name]: e.target.value });
 
-    // --- HELPER: Save Tokens to LocalStorage ---
     const saveAuthData = (data) => {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('user_data', JSON.stringify(data.user));
     };
 
-    // --- LOGIN SUBMIT (Real Backend Connection) ---
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         setBackendError("");
@@ -66,7 +58,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                 throw new Error(data.detail || "Login failed. Please check credentials.");
             }
 
-            // SUCCESS: Save tokens and switch screen
             saveAuthData(data);
             onLoginSuccess(data.user);
 
@@ -78,7 +69,6 @@ const LoginPage = ({ onLoginSuccess }) => {
         }
     };
 
-    // --- REGISTER SUBMIT (Real Backend Connection) ---
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         setBackendError("");
@@ -97,13 +87,10 @@ const LoginPage = ({ onLoginSuccess }) => {
                 throw new Error(data.detail || "Registration failed");
             }
 
-            // SUCCESS: Show success message first
             setRegisterSuccess(true);
 
-            // Save tokens immediately so they are ready
             saveAuthData(data);
 
-            // Wait 1.5s for user to read success message, then auto-login
             setTimeout(() => {
                 onLoginSuccess(data.user);
             }, 1500);
@@ -130,7 +117,6 @@ const LoginPage = ({ onLoginSuccess }) => {
     return (
         <div className="min-h-screen bg-slate-100 flex items-center justify-center relative overflow-hidden font-sans">
 
-            {/* --- 1. INTRO ANIMATION LAYER --- */}
             {showIntro && (
                 <div className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900 transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
                     <div className="text-center px-4">
@@ -145,12 +131,9 @@ const LoginPage = ({ onLoginSuccess }) => {
                 </div>
             )}
 
-            {/* --- 2. MAIN CARD CONTAINER --- */}
-            {/* FIX: Added 'invisible' when showIntro is true to stop password managers from popping up over the intro */}
             <div className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[600px] overflow-hidden transition-all duration-1000 
             ${showIntro ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
 
-                {/* --- REGISTER FORM (Left Side / Hidden initially) --- */}
                 <div className={`absolute top-0 h-full w-1/2 transition-all duration-700 ease-in-out flex flex-col justify-center items-center p-10 bg-white
             ${isSignUp ? 'left-1/2 opacity-100 z-20' : 'left-0 opacity-0 z-10'}`}>
 
@@ -184,7 +167,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                             </div>
                         </div>
 
-                        {/* ERROR / SUCCESS MESSAGES */}
                         {backendError && (
                             <div className="mt-4 p-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg">
                                 {backendError}
@@ -203,12 +185,10 @@ const LoginPage = ({ onLoginSuccess }) => {
                     </form>
                 </div>
 
-                {/* --- LOGIN FORM (Right Side / Visible initially) --- */}
                 <div className={`absolute top-0 left-0 h-full w-1/2 transition-all duration-700 ease-in-out flex flex-col justify-center items-center p-10 bg-white z-20
             ${isSignUp ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100'}`}>
 
                     {!showForgot ? (
-                        // NORMAL LOGIN VIEW
                         <form onSubmit={handleLoginSubmit} className="w-full text-center">
                             <div className="mb-6 flex justify-center">
                                 <div className="p-3 bg-blue-100 rounded-xl">
@@ -239,7 +219,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                                 </button>
                             </div>
 
-                            {/* LOGIN ERRORS */}
                             {backendError && (
                                 <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg">
                                     {backendError}
@@ -251,7 +230,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                             </button>
                         </form>
                     ) : (
-                        // FORGOT PASSWORD VIEW
                         <div className="w-full text-center">
                             {!resetSent ? (
                                 <form onSubmit={handleForgotSubmit}>
@@ -283,14 +261,12 @@ const LoginPage = ({ onLoginSuccess }) => {
                     )}
                 </div>
 
-                {/* --- SLIDING OVERLAY (The Moving Rectangle) --- */}
                 <div className={`absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50 rounded-l-[100px] rounded-r-none
              ${isSignUp ? '-translate-x-full rounded-l-none rounded-r-[100px]' : ''}`}>
 
                     <div className={`bg-gradient-to-br from-blue-700 to-slate-900 text-white relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out flex items-center justify-center
                ${isSignUp ? 'translate-x-1/2' : 'translate-x-0'}`}>
 
-                        {/* Left Panel (Visible during Register -> Prompts Login) */}
                         <div className="w-1/2 h-full flex flex-col items-center justify-center px-10 text-center transform transition-transform duration-700 ease-in-out">
                             <h2 className="text-3xl font-bold mb-4">Let's Get Started!</h2>
                             <p className="mb-8 text-blue-100">Create your account to unlock the best insurance recommendations.</p>
@@ -302,7 +278,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                             </button>
                         </div>
 
-                        {/* Right Panel (Visible during Login -> Prompts Register) */}
                         <div className="w-1/2 h-full flex flex-col items-center justify-center px-10 text-center transform transition-transform duration-700 ease-in-out">
                             <h2 className="text-3xl font-bold mb-4">New to ICRA?</h2>
                             <p className="mb-8 text-blue-100">Find your perfect coverage in minutes</p>

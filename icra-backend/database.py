@@ -4,10 +4,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-# Load secrets from .env file
 load_dotenv()
 
-# Use the secure variable
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./icra.db")
 
 engine = create_engine(

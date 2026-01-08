@@ -4,17 +4,14 @@ import Wishlist from './Wishlist';
 import NotificationDrawer from './NotificationDrawer';
 
 const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }) => {
-  // --- STATES ---
   const [showWelcome, setShowWelcome] = useState(!welcomeShown);
   const [isPaused, setIsPaused] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
 
-  // --- NOTIFICATION STATES ---
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Calculator States
   const [activeCalc, setActiveCalc] = useState(null);
   const [calcInputs, setCalcInputs] = useState({});
   const [calcErrors, setCalcErrors] = useState({});
@@ -23,7 +20,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
   const [showWishlistPage, setShowWishlistPage] = useState(false);
   const scrollRef = useRef(null);
 
-  // --- HELPER: SHUFFLE ARRAY ---
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -32,7 +28,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
     return array;
   };
 
-  // --- NOTIFICATION HANDLERS ---
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -72,7 +67,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
     } catch (err) { console.error("Failed to delete", err); }
   };
 
-  // --- INITIAL DATA LOAD ---
   useEffect(() => {
     const fetchRecs = async () => {
       try {
@@ -93,7 +87,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
     fetchNotifications();
   }, []);
 
-  // --- RESTORED: AUTO SCROLL EFFECT ---
   useEffect(() => {
     let scrollInterval;
     if (!isPaused && !showWelcome) {
@@ -111,7 +104,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
     return () => clearInterval(scrollInterval);
   }, [isPaused, showWelcome, recommendations]);
 
-  // --- EFFECT: WELCOME TIMER & KEYS ---
   useEffect(() => {
     if (!welcomeShown) {
       const timer = setTimeout(() => {
@@ -134,7 +126,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
     return () => { window.removeEventListener('keydown', handleKeyDown); };
   }, [welcomeShown, setWelcomeShown]);
 
-  // --- CALCULATORS ---
   const calculators = [
     { id: 'prem', category: 'Finance', name: 'Premium Estimator', icon: '💲', desc: 'Estimate Life Insurance Premium.', inputs: [{ label: 'Cover Amount', key: 'c' }, { label: 'Age', key: 'a' }], logic: (v) => '₹' + ((v.c * 0.002) + (v.a * 500)).toLocaleString() + '/yr' },
     { id: 'emi', category: 'Finance', name: 'Home Loan EMI', icon: '🏠', desc: 'Find out your monthly mortgage payment by entering the loan amount, interest rate, and duration.', inputs: [{ label: 'Amount', key: 'p' }, { label: 'Rate %', key: 'r' }, { label: 'Years', key: 'n' }], logic: (v) => '₹' + ((v.p * v.r / 1200 * Math.pow(1 + v.r / 1200, v.n * 12)) / (Math.pow(1 + v.r / 1200, v.n * 12) - 1)).toFixed(0) },
@@ -210,7 +201,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
 
       <style>{` .hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } `}</style>
 
-      {/* NAVBAR */}
       <nav className="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="bg-blue-600 text-white p-1.5 rounded-lg"><ShieldCheck size={20} /></div>
@@ -230,10 +220,8 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
       <main className="max-w-6xl mx-auto p-8">
 
-        {/* CAROUSEL */}
         <div className="relative mb-8 transition-all duration-1000 -mx-8 px-8">
           <div className={`transition-all duration-1000 ease-in-out overflow-hidden ${showWelcome ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0'}`}>
             <div className="bg-gradient-to-r from-blue-600 to-slate-800 rounded-2xl p-10 text-white shadow-xl relative h-48 flex flex-col justify-center">
@@ -290,7 +278,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
           </div>
         </div>
 
-        {/* TILES */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
           <div onClick={() => onNavigate('risk-profile')} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer group">
             <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors"><Shield size={24} /></div>
@@ -319,7 +306,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
 
         <hr className="border-t border-slate-200 my-10" />
 
-        {/* CALCULATORS */}
         <div className="mb-8"><h2 className="text-2xl font-bold text-slate-800">Financial Planning & Insurance Tools</h2><p className="text-slate-500 mt-1">Calculate premiums, returns, and eligibility instantly.</p></div>
 
         {!activeCalc ? (
@@ -368,15 +354,6 @@ const Dashboard = ({ user, onLogout, onNavigate, welcomeShown, setWelcomeShown }
         )}
 
       </main>
-      
-      {/* Hidden Admin Access Button (Bottom Right) */}
-      <div 
-        onClick={() => onNavigate('admin')} 
-        className="fixed bottom-4 right-4 w-12 h-12 bg-slate-800 opacity-10 hover:opacity-30 rounded-full cursor-pointer transition-opacity flex items-center justify-center"
-        title="Admin Dashboard"
-      >
-        <ShieldCheck size={20} className="text-white" />
-      </div>
     </div>
   );
 };
