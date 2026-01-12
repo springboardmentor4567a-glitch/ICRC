@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, Float, Date, DateTime, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from database import Base
@@ -38,3 +38,15 @@ class Policy(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     provider = relationship("Provider", back_populates="policies")
+class Claim(Base):
+    __tablename__ = "claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_name = Column(String, nullable=False)
+    policy_number = Column(String, nullable=False)
+    claim_type = Column(String, nullable=False)
+    incident_date = Column(Date, nullable=False)
+    amount = Column(Float, nullable=False)
+    reason = Column(Text, nullable=False)
+    status = Column(String, default="submitted")
+    created_at = Column(DateTime, default=datetime.utcnow)

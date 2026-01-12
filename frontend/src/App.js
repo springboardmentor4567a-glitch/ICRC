@@ -12,6 +12,11 @@ import PremiumCalculator from "./pages/PremiumCalculator";
 import UserPreferences from "./pages/UserPreferences";
 import "./App.css";
 import Layout from "./components/Layout";
+import Profile from "./pages/Profile";
+import MyClaims from "./pages/MyClaims";
+
+
+
 
 function App() {
   return (
@@ -27,8 +32,11 @@ function App() {
         <Route path="/recommend" element={<Layout><Recommendations /></Layout>} />
         <Route path="/preferences" element={<Layout><UserPreferences /></Layout>} />
         <Route path="/claims" element={<Layout><FileClaim /></Layout>} />
+        <Route path="/my-claims" element={<Layout><MyClaims /></Layout>} />
         <Route path="/calculator" element={<Layout><PremiumCalculator /></Layout>} />
         <Route path="/policy/:id" element={<Layout><PolicyDetails /></Layout>} />
+        <Route path="/profile" element={<Layout><Profile /></Layout>} />
+
       </Routes>
     </BrowserRouter>
   );

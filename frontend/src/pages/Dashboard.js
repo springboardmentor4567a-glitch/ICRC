@@ -1,20 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import Header from "../components/Header";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
-
   return (
     <>
-      {/* Header WITHOUT logout */}
-      <Header />
+      
 
       <div className="dashboard-container" style={{ paddingTop: "80px" }}>
         {/* Title */}
@@ -48,25 +41,6 @@ export default function Dashboard() {
             <h3>Premium Calculator</h3>
             <p>Estimate premium based on age & coverage</p>
           </div>
-        </div>
-
-        {/* Logout Button – EXACT position like image */}
-        <div style={{ marginTop: "40px", textAlign: "center" }}>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: "#ff4d4f",
-              color: "white",
-              border: "none",
-              padding: "12px 28px",
-              borderRadius: "10px",
-              fontWeight: "700",
-              cursor: "pointer",
-              fontSize: "15px",
-            }}
-          >
-            Logout
-          </button>
         </div>
       </div>
     </>

@@ -7,6 +7,9 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from dotenv import load_dotenv
+from fastapi import UploadFile, File
+from utils.email import send_email
+
 
 import database
 import models
@@ -26,11 +29,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 models.Base.metadata.create_all(bind=database.engine)
 
@@ -176,4 +180,112 @@ def get_preferences(
     current_user: models.User = Depends(get_current_user)
 ):
     return current_user.risk_profile
+@app.post("/claims", response_model=schemas.ClaimOut)
+def create_claim(
+    claim: schemas.ClaimCreate,
+    db: Session = Depends(get_db)
+):
+    new_claim = models.Claim(
+        user_name=claim.user_name,
+        policy_number=claim.policy_number,
+        claim_type=claim.claim_type,
+        incident_date=claim.incident_date,
+        amount=claim.amount,
+        reason=claim.reason,
+        status="submitted"
+    )
+
+    db.add(new_claim)
+    db.commit()
+    db.refresh(new_claim)
+
+    # 📧 EMAIL NOTIFICATION (FIXED)
+    email_body = f"""
+Hello {new_claim.user_name},
+
+Your insurance claim has been submitted successfully.
+
+Claim ID: {new_claim.id}
+Policy Number: {new_claim.policy_number}
+Claim Type: {new_claim.claim_type}
+Amount: ₹{new_claim.amount}
+Status: {new_claim.status}
+
+
+We will notify you once the status changes.
+
+Thank you,
+Insurance Claim Assistant Team
+"""
+
+    send_email(
+        to_email="srivallipulaparthi24@gmail.com",  # replace with user email later
+        subject="Claim Submitted Successfully",
+        body=email_body
+    )
+
+    return {
+    "id": new_claim.id,
+    "user_name": new_claim.user_name,
+    "policy_number": new_claim.policy_number,
+    "claim_type": new_claim.claim_type,
+    "incident_date": new_claim.incident_date,
+    "amount": new_claim.amount,
+    "reason": new_claim.reason,
+    "status": new_claim.status,
+    "created_at": new_claim.created_at,
+    "email_sent": True
+}
+
+
+
+@app.get("/claims", response_model=list[schemas.ClaimOut])
+def list_claims(db: Session = Depends(get_db)):
+    return db.query(models.Claim).order_by(models.Claim.created_at.desc()).all()
+
+@app.post("/claims/{claim_id}/documents")
+def upload_docs(claim_id: int, file: UploadFile = File(...)):
+    allowed_types = ["application/pdf", "image/jpeg", "image/png"]
+
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+
+    contents = file.file.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large")
+
+    return {
+        "claim_id": claim_id,
+        "filename": file.filename,
+        "status": "uploaded"
+    }
+@app.patch("/claims/{claim_id}/status")
+def update_claim_status(
+    claim_id: int,
+    status: str,
+    db: Session = Depends(get_db)
+):
+    claim = db.query(models.Claim).filter(models.Claim.id == claim_id).first()
+
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if status not in ["submitted", "in_progress", "approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    claim.status = status
+    db.commit()
+    db.refresh(claim)
+
+    return {
+        "message": "Claim status updated",
+        "claim_id": claim.id,
+        "status": claim.status
+    }
+@app.get("/claims/status/{status}")
+def get_claims_by_status(
+    status: str,
+    db: Session = Depends(get_db)
+):
+    return db.query(models.Claim).filter(models.Claim.status == status).all()
 

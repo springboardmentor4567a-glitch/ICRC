@@ -1,19 +1,20 @@
 .dashboard-container {
   min-height: 100vh;
-  padding: 50px;
-  background: radial-gradient(circle at top, #1b1b3a, #0b0b16);
-  color: white;
+  padding: 120px 50px 50px; /* ⬅ top padding increased */
+  background: linear-gradient(135deg, #fdf4ff, #fae8ff);
   text-align: center;
+  color: #1f2937; 
 }
 
+
 .dashboard-header h1 {
-  color: #8f7cff;
+  color: #6953e9;
   font-size: 36px;
   margin-bottom: 10px;
 }
 
 .dashboard-header p {
-  color: #b5b5ff;
+  color: #171718;
   margin-bottom: 50px;
   font-size: 16px;
 }
@@ -25,47 +26,64 @@
   max-width: 900px;
   margin: auto;
 }
+.dashboard-card {
+  border-top: 4px solid #534dc5;
+}
+.dashboard-icon {
+  background: rgba(100, 94, 222, 0.792);
+  padding: 12px;
+  border-radius: 50%;
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+
+
 
 .dash-card {
-  background: #1f1f3d;
+   background: linear-gradient(
+    135deg,
+    #eed4d4b8,
+    #fefdff
+  );
   padding: 30px;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: 0 0 25px rgba(143, 124, 255, 0.25);
+  box-shadow: 0 0 25px rgba(144, 124, 255, 0.566);
   transition: all 0.3s ease;
 }
 
 .dash-card:hover {
   transform: translateY(-8px) scale(1.03);
-  box-shadow: 0 0 40px rgba(143, 124, 255, 0.6);
+  box-shadow: 0 0 40px rgb(94, 83, 160);
 }
 
 .dash-card .icon {
-  font-size: 40px;
+  font-size: 50px;
   margin-bottom: 15px;
   display: block;
 }
 
 .dash-card h3 {
-  color: #c77dff;
+  color: #a771ee; 
   margin-bottom: 10px;
+  font-weight: 700;
 }
 
 .dash-card p {
   font-size: 14px;
-  color: #d1d1ff;
+  color: #0f0f10;
 }
 
 .logout-btn {
-  margin-top: 50px;
-  padding: 12px 30px;
-  background: #ff4d4d;
-  border: none;
-  border-radius: 10px;
+  margin-top: 40px;
+  background: linear-gradient(90deg, #6c63ff, #c77dff);
   color: white;
-  font-size: 16px;
-  cursor: pointer;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 14px;
+  font-weight: 700;
 }
+
 
 .logout-btn:hover {
   background: #ff1f1f;

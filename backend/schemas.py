@@ -1,5 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
+from datetime import date
+from datetime import datetime
+
 
 class RegisterIn(BaseModel):
     full_name: str
@@ -52,3 +55,27 @@ class UserPreferences(BaseModel):
     annual_income: str
     dependents: int
     pre_existing_conditions: bool
+from datetime import date
+
+class ClaimCreate(BaseModel):
+    user_name: str
+    policy_number: str
+    claim_type: str
+    incident_date: date
+    amount: float
+    reason: str
+
+class ClaimOut(BaseModel):
+    id: int
+    user_name: str
+    policy_number: str
+    claim_type: str
+    incident_date: date
+    amount: float
+    reason: str
+    status: str
+    created_at: datetime
+    email_sent: bool = False   # ✅ ADD THIS
+
+    class Config:
+        from_attributes = True

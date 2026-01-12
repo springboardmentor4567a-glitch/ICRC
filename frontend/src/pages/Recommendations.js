@@ -136,16 +136,19 @@ const riskBadge = getRiskBadge(risk);
 
       {/* ---------- BEST MATCH ---------- */}
       <div
-        style={{
-          width: "420px",
-          margin: "30px auto",
-          background:"white",
-          padding: "25px",
-          borderRadius: "14px",
-          boxShadow: "0 0 20px #ca94f6ff",
-          textAlign: "left",
-        }}
-      >
+  style={{
+    width: "420px",
+    margin: "30px auto",
+    background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(243,232,255,0.9))",
+    padding: "28px",
+    borderRadius: "18px",
+    border: "1.5px solid #e9d5ff",
+    boxShadow: "0 20px 40px rgba(124, 58, 237, 0.25)",
+    textAlign: "left",
+    transition: "all 0.25s ease",
+  }}
+>
+
         <p style={{ color: "#facc15", fontWeight: "bold" }}>⭐ BEST MATCH</p>
         <span
   style={{
@@ -221,7 +224,10 @@ const riskBadge = getRiskBadge(risk);
                 key={p.id}
                 style={{
                   width: "260px",
-                  background: "white",
+                  background: "linear-gradient(135deg, #f8f0ff, #ffffff)",
+                  border: "1px solid #e9d5ff",
+                  transition: "all 0.25s ease",
+
                   padding: "20px",
                   borderRadius: "12px",
                   boxShadow: "0 0 10px #bb7ae9ff",

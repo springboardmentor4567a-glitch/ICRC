@@ -35,7 +35,12 @@ export default function Register() {
         return;
       }
 
-      setSuccess("Registration Successful ✔ Redirecting...");
+      setSuccess(
+  <span style={{ color: "#16a34a", fontWeight: "600" }}>
+    Registration Successful ✔ Redirecting...
+  </span>
+);
+
       setTimeout(() => navigate("/login"), 1500);
 
     } catch {
@@ -52,14 +57,14 @@ export default function Register() {
         marginBottom:"20px",
         fontSize:"32px",
         fontWeight:"bold",
-        color:"#6C63FF",
+        color:"black",
       }}>
         Insurance Comparison, Recommendation & Claim Assistant
       </h1>
 
       <div className="center-box">
         <form onSubmit={submit} className="form-card">
-          <h2 style={{marginBottom:"10px"}}>Create Account</h2>
+          <h2 style={{marginBottom:"10px",color:"Black"}}>Create Account</h2>
 
           {error && <p className="msg-error">{error}</p>}
           {success && <p className="msg-success">{success}</p>}
@@ -84,8 +89,8 @@ export default function Register() {
             </div>
 
 
-          <p style={{marginTop:"12px"}}>
-            Already have an account? <a href="/login" style={{color:"#c77dffff"}}>Login</a>
+          <p style={{marginTop:"12px",color:"black"}}>
+            Already have an account? <a href="/login" style={{color:"black",fontWeight: "600"}}>Login</a>
           </p>
         </form>
       </div>

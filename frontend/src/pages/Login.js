@@ -40,7 +40,7 @@ export default function Login() {
           marginBottom: "20px",
           fontSize: "32px",
           fontWeight: "bold",
-          color: "#6C63FF",
+          color: "black",
         }}
       >
         Insurance Comparison, Recommendation & Claim Assistant
@@ -48,7 +48,7 @@ export default function Login() {
 
       <div className="center-box">
         <form onSubmit={submit} className="form-card">
-          <h2>Login</h2>
+          <h2>Login </h2>
 
           {/* ✅ ERROR MESSAGE – FIXED POSITION */}
           {error && (
@@ -79,11 +79,14 @@ export default function Login() {
             <button className="btn-purple">Login</button>
           </div>
 
-          <p style={{ marginTop: "12px" }}>
-            Don't have an account?{" "}
-            <a href="/register" style={{ color: "#c77dff" }}>
-              Register
-            </a>
+          <p style={{ marginTop: "12px",color:"black" }}>
+            Don't have an account?{" "} 
+           <a
+  href="/register"
+  style={{ color: "black", fontWeight: "600" }}
+>
+  Register
+</a>
           </p>
         </form>
       </div>
