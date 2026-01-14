@@ -9,6 +9,8 @@ import Profile from './Profile';
 import CheckoutPage from './CheckoutPage';
 import ActivityLog from './ActivityLog';
 import AdminDashboard from './AdminDashboard';
+// 1. IMPORT THE CHATBOT
+import Chatbot from './Chatbot';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -135,6 +137,13 @@ function App() {
           )}
           {currentView === 'admin' && (
             <AdminDashboard onLogout={handleLogout} />
+          )}
+
+          {/* 2. RENDER THE CHATBOT HERE 
+              We check user exists AND currentView is NOT admin
+          */}
+          {user && currentView !== 'admin' && (
+            <Chatbot user={user} onNavigate={handleNavigate} />
           )}
         </>
       )}
