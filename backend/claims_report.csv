@@ -1,0 +1,23 @@
+ID,User ID,Policy ID,Status,Created At
+1,1,health_plus_plus,Approved,2026-01-11 07:13:13.981389
+2,1,health_plus_plus,Rejected,2026-01-11 09:17:58.662050
+3,1,auto_protect_plus,Submitted,2026-01-13 10:08:23.717494
+4,1,life_secure,Submitted,2026-01-13 10:21:56.129093
+5,1,life_secure,Submitted,2026-01-13 10:22:00.059207
+6,1,life_secure,Submitted,2026-01-13 10:22:03.447274
+7,1,life_secure,Submitted,2026-01-13 10:22:06.888421
+8,1,life_secure,Submitted,2026-01-13 10:22:10.260471
+9,1,health_plus_plus,Submitted,2026-01-16 05:05:10.469001
+10,1,health_plus_plus,Submitted,2026-01-16 05:05:16.071274
+11,1,health_plus_plus,Submitted,2026-01-16 05:05:20.991748
+12,1,health_plus_plus,Submitted,2026-01-16 05:05:25.941406
+13,1,health_plus_plus,Submitted,2026-01-16 05:05:31.433373
+14,1,health_plus_plus,Submitted,2026-01-16 05:05:36.323609
+15,1,health_plus_plus,Submitted,2026-01-16 05:05:41.225492
+16,1,health_plus_plus,Submitted,2026-01-16 05:05:46.246833
+17,1,health_plus_plus,Submitted,2026-01-16 05:05:51.547359
+18,1,health_plus_plus,Submitted,2026-01-16 05:05:56.267103
+19,1,health_plus_plus,Submitted,2026-01-16 05:06:00.976083
+20,1,health_plus_plus,Submitted,2026-01-16 05:06:05.417009
+21,1,life_secure_plus,Submitted,2026-01-16 08:00:08.276932
+22,1,life_secure_plus,Submitted,2026-01-16 08:00:15.013320
