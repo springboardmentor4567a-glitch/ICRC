@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Backend Server",
+			"type": "shell",
+			"command": "cd \"Training/Training/backend\" && \"../..\\..\\.venv\\Scripts\\python.exe\" -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Frontend Dependencies",
+			"type": "shell",
+			"command": "cd \"Training/Training/frontend\" && npm install",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Frontend Server",
+			"type": "shell",
+			"command": "cd \"Training/Training/frontend\" && npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

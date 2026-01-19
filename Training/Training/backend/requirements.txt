@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy>=1.4
+psycopg2-binary
+python-dotenv
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+aiofiles
+boto3
+celery
+redis
+python-decouple
