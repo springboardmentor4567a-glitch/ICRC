@@ -1,0 +1,95 @@
+/* Container for the whole homepage */
+.home-container {
+  padding: 20px 20px 40px; /* Reduced top padding to 20px */
+  text-align: center;
+  background-color: #f4f7f6;
+  min-height: 80vh;
+}
+
+.home-header {
+  margin-bottom: 20px; /* Reduced gap between header and cards */
+}
+
+.home-header h2 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 5px; /* Tighter gap between Title and Subtitle */
+  margin-top: 0;      /* Ensure no default browser margin pushes it down */
+}
+
+.home-header p {
+  color: #7f8c8d;
+  margin-bottom: 0;   /* Removed bottom margin from P to let container handle gap */
+}
+
+/* The Grid for the Cards */
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px; /* Slightly tighter gap between cards */
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ... Keep all your existing .dashboard-card styles exactly the same ... */
+.dashboard-card {
+  background: white;
+  width: 220px;
+  height: 180px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px); /* Reduced movement slightly for snappier feel */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-color: #3498db;
+}
+
+.dashboard-card h3 {
+  margin: 15px 0 10px 0;
+  color: #34495e;
+  font-size: 1.2rem;
+}
+
+.dashboard-card p {
+  font-size: 0.9rem;
+  color: #95a5a6;
+  margin: 0;
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* ... Keep .back-btn styles exactly the same ... */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #334155;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px; /* Slightly more compact button */
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px; /* Less gap below button */
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.back-btn:hover {
+  background-color: #1e293b;
+  transform: translateX(-5px);
+}

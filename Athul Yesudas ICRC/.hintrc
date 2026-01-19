@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "development"
+  ],
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not ios_saf <= 11.2"
+  ],
+  "hints": {
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "-moz-appearance",
+          "-webkit-appearance",
+          "appearance",
+          "backdrop-filter",
+          "scroll-snap-type",
+          "scroll-snap-align",
+          "text-decoration-thickness",
+          "user-select"
+        ]
+      }
+    ]
+  }
+}
