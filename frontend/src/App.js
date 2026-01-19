@@ -14,6 +14,12 @@ import "./App.css";
 import Layout from "./components/Layout";
 import Profile from "./pages/Profile";
 import MyClaims from "./pages/MyClaims";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminClaims from "./pages/AdminClaims";
+import AdminFraud from "./pages/AdminFraud";
+import AdminClaimDetails from "./pages/AdminClaimDetails";
+
+
 
 
 
@@ -36,6 +42,12 @@ function App() {
         <Route path="/calculator" element={<Layout><PremiumCalculator /></Layout>} />
         <Route path="/policy/:id" element={<Layout><PolicyDetails /></Layout>} />
         <Route path="/profile" element={<Layout><Profile /></Layout>} />
+        <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
+        <Route path="/admin/claims" element={<Layout><AdminClaims /></Layout>} />
+        <Route path="/admin/fraud" element={<Layout><AdminFraud /></Layout>} />
+        <Route path="/admin/claims/:id" element={<Layout><AdminClaimDetails /></Layout>} />
+
+
 
       </Routes>
     </BrowserRouter>

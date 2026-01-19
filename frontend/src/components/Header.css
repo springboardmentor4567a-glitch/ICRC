@@ -1,6 +1,5 @@
 /* ================= HEADER ================= */
 
-/* ===== HEADER ===== */
 .app-header {
   position: fixed;
   top: 0;
@@ -8,12 +7,17 @@
   right: 0;
   height: 70px;
   padding: 0 30px;
+
   background: linear-gradient(90deg, #6c63ff, #c77dff);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   z-index: 1000;
 }
+
+/* ---------- LEFT ---------- */
 
 .header-left {
   display: flex;
@@ -24,10 +28,11 @@
 .logo {
   color: white;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 22px;
+  cursor: pointer;
 }
 
-/* ===== Attractive Back Button ===== */
+/* Optional Back Button */
 .back-btn {
   display: flex;
   align-items: center;
@@ -44,150 +49,80 @@
   font-weight: 700;
 
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(108,99,255,0.35);
-
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.35);
   transition: all 0.25s ease;
 }
 
-/* Hover effect */
 .back-btn:hover {
   transform: translateX(-4px);
   background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-  box-shadow: 0 10px 22px rgba(108,99,255,0.5);
+  box-shadow: 0 10px 22px rgba(108, 99, 255, 0.5);
 }
 
-/* Active click */
-.back-btn:active {
-  transform: scale(0.96);
-}
+/* ---------- RIGHT ---------- */
 
-
-/* Profile avatar */
-.profile-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: white;
-  color: #6c63ff;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-}
-
-/* Dropdown */
-.profile-dropdown {
-  position: absolute;
-  top: 60px;
-  right: 30px;
-  width: 220px;
-  background: white;
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-}
-
-.profile-dropdown button {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-
-/* Logo */
-.logo {
-  font-size: 22px;
-  font-weight: 800;
-  color: white;
-}
-
-/* ================= PROFILE DROPDOWN ================= */
-
-.profile-area {
-  position: relative;
-}
-
-.profile-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: white;
-  color: #6c63ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* Dropdown */
-.profile-dropdown {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  width: 180px;
-  background: white;
-  border-radius: 14px;
-  padding: 12px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-}
-
-.profile-name {
-  font-size: 13px;
-  color: #1b1919;
-  margin-bottom: 10px;
-  font-weight: 600;
-  word-break: break-all;
-}
-
-.profile-dropdown button {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.profile-dropdown .logout-btn {
-  background: #ef4444;
-  color: white;
-}
-.profile-dropdown button:hover {
-  background: #e5e7eb;
-}
-
-.logout-btn {
-  background: #ef4444 !important;
-  color: white;
-}
-
-
-/* LEFT */
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.logo-text {
-  font-size: 22px;
-  font-weight: 800;
-  color: #c77dff;
-}
-
-/* CENTER */
-.header-center {
-  text-align: center;
-}
-
-/* RIGHT */
 .header-right {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ---------- COMMON BUTTON ---------- */
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  border: none;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- ADMIN BUTTON ---------- */
+
+.header-btn.admin {
+  background: linear-gradient(135deg, #ffffff, #f3e8ff);
+  color: #6c63ff;
+}
+
+.header-btn.admin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(108, 99, 255, 0.5);
+}
+
+/* ---------- PROFILE BUTTON ---------- */
+
+.header-btn.profile {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4b0082;
+}
+
+.header-btn.profile:hover {
+  background: white;
+  transform: translateY(-2px);
+}
+
+/* ---------- LOGOUT BUTTON ---------- */
+
+.header-btn.logout {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.header-btn.logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.6);
+}
+
+.header-btn.logout:active {
+  transform: scale(0.95);
 }

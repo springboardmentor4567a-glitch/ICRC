@@ -89,7 +89,7 @@ export default function Recommendations() {
 
   if (matched.length === 0) {
     return (
-      <p style={{ color: "white", textAlign: "center", marginTop: "40px" }}>
+      <p style={{ color: "black", textAlign: "center", marginTop: "40px" }}>
         No suitable policies found.
       </p>
     );
@@ -110,7 +110,7 @@ const riskBadge = getRiskBadge(risk);
   /* ---------------- UI ---------------- */
   return (
     <div style={{ color: "#1f2937", paddingTop: "40px", textAlign: "center" }}>
-      <h1 style={{ color: "#9d4edd" }}>🎯 Recommended for You</h1>
+      <h1 style={{ color: "#6f06c6" }}>🎯 Recommended for You</h1>
       <p>Based on your profile</p>
 
       {/* ---- RISK BADGE ---- */}
@@ -137,27 +137,27 @@ const riskBadge = getRiskBadge(risk);
       {/* ---------- BEST MATCH ---------- */}
       <div
   style={{
-    width: "420px",
-    margin: "30px auto",
-    background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(243,232,255,0.9))",
-    padding: "28px",
-    borderRadius: "18px",
-    border: "1.5px solid #e9d5ff",
-    boxShadow: "0 20px 40px rgba(124, 58, 237, 0.25)",
+    width: "500px",
+    margin: "10px auto",
+    background: "linear-gradient(135deg, rgba(241, 242, 248, 0.95), rgba(255, 255, 255, 0.9))",
+    padding: "20px",
+    borderRadius: "20px",
+    border: "1.5px solid #65507b",
+    boxShadow: "0 20px 40px rgba(82, 52, 134, 0.42)",
     textAlign: "left",
     transition: "all 0.25s ease",
   }}
 >
 
-        <p style={{ color: "#facc15", fontWeight: "bold" }}>⭐ BEST MATCH</p>
+        <p style={{ color: "#90922f", fontWeight: "900" }}>⭐ BEST MATCH</p>
         <span
   style={{
-    display: "inline-block",
+  
     padding: "4px 10px",
     background: riskBadge.color,
     color: "#000",
     borderRadius: "20px",
-    fontSize: "12px",
+    fontSize: "15px",
     fontWeight: "bold",
     marginBottom: "10px",
   }}
@@ -166,10 +166,10 @@ const riskBadge = getRiskBadge(risk);
 </span>
 
         <h2>{best.name}</h2>
-        <p style={{ color: "#40e531ff" }}>₹{best.premium} / year</p>
+        <p style={{ color: "rgb(70, 211, 57)",fontSize: "20px",fontWeight:"bold" }}>₹{best.premium} / year</p>
         <p>{best.benefits || "Comprehensive coverage"}</p>
 
-        <p style={{ fontSize: "14px", marginTop: "10px" }}>
+        <p style={{ fontSize: "16px", marginTop: "10px" }}>
           📌 Why? Age {profile.age},{" "}
           {profile.smoker ? "smoker" : "non-smoker"},{" "}
           {profile.annual_income} income
@@ -184,8 +184,9 @@ const riskBadge = getRiskBadge(risk);
             background: " linear-gradient(90deg, #6c63ff, #c77dff)",
             color: "black",
             border: "none",
-            borderRadius: "8px",
-            cursor: "default",
+            borderRadius: "10px",
+            cursor:"pointer",
+    
           }}
         >
           Select Plan
@@ -197,6 +198,7 @@ const riskBadge = getRiskBadge(risk);
           color: "#1f2937",
           marginTop: "50px",
           cursor: "pointer",
+          fontWeight:"bold"
         }}
         onClick={() => navigate("/preferences")}
       >
@@ -206,16 +208,16 @@ const riskBadge = getRiskBadge(risk);
       {/* ---------- OTHER PLANS ---------- */}
       {others.length > 0 && (
         <>
-          <h3 style={{ marginTop: "40px", color: "#c77dff" }}>
+          <h3 style={{ marginTop: "40px", color: "#a014e7" }}>
             Other suitable plans
           </h3>
 
           <div
             style={{
-              display: "flex",
+              display:'flex',
               justifyContent: "center",
-              gap: "20px",
-              marginTop: "20px",
+              gap: "30px",
+              marginTop: "10px",
               flexWrap: "wrap",
             }}
           >
@@ -235,7 +237,7 @@ const riskBadge = getRiskBadge(risk);
                 }}
               >
                 <h4>{p.name}</h4>
-                <p style={{ color: "#4fdf42ff" }}>
+                <p style={{ color: "rgb(70, 243, 54)" }}>
                   ₹{p.premium} / year
                 </p>
 

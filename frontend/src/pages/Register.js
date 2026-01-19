@@ -36,7 +36,7 @@ export default function Register() {
       }
 
       setSuccess(
-  <span style={{ color: "#16a34a", fontWeight: "600" }}>
+  <span style={{ color: "#058333", fontWeight: "600" }}>
     Registration Successful ✔ Redirecting...
   </span>
 );
@@ -64,7 +64,7 @@ export default function Register() {
 
       <div className="center-box">
         <form onSubmit={submit} className="form-card">
-          <h2 style={{marginBottom:"10px",color:"Black"}}>Create Account</h2>
+          <h2 style={{marginBottom:"10px",color:"black"}}>Create Account</h2>
 
           {error && <p className="msg-error">{error}</p>}
           {success && <p className="msg-success">{success}</p>}

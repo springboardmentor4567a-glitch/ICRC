@@ -48,52 +48,66 @@ export default function FileClaim() {
 
   /* ================= SUBMIT CLAIM ================= */
   const submitClaim = async () => {
-    if (
-      !form.user_name.trim() ||
-      !form.policy_number.trim() ||
-      !form.claim_type ||
-      !form.incident_date ||
-      !form.amount ||
-      !form.reason.trim()
-    ) {
-      setMessage("❌ Please fill all required fields.");
+  if (
+    !form.user_name.trim() ||
+    !form.policy_number.trim() ||
+    !form.claim_type ||
+    !form.incident_date ||
+    !form.amount ||
+    !form.reason.trim()
+  ) {
+    setMessage("❌ Please fill all required fields.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setMessage("");
+
+    // 1️⃣ CREATE CLAIM
+    const res = await fetch("http://127.0.0.1:8000/claims", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...form,
+        amount: Number(form.amount),
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      setMessage(err.detail || "Claim creation failed");
       return;
     }
 
-    try {
-      setLoading(true);
-      setMessage("");
+    const claim = await res.json();
+    const claimId = claim.id;   // ⭐ IMPORTANT
 
-      const payload = {
-        user_name: form.user_name,
-        policy_number: form.policy_number,
-        claim_type: form.claim_type,
-        incident_date: form.incident_date,
-        amount: Number(form.amount),
-        reason: form.reason
-      };
+    // 2️⃣ UPLOAD FILES (THIS FIXES EVERYTHING)
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const res = await fetch("http://127.0.0.1:8000/claims", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        setMessage(err.detail || "Invalid data");
-        return;
-      }
-
-      const data = await res.json();
-      setReceipt(data);
-      setMessage("✅ Claim submitted successfully. Confirmation email sent.");
-    } catch {
-      setMessage("❌ Server error. Please try again.");
-    } finally {
-      setLoading(false);
+      await fetch(
+        `http://127.0.0.1:8000/claims/${claimId}/documents`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
     }
-  };
+
+    // 3️⃣ SUCCESS
+    setReceipt(claim);
+    setMessage("✅ Claim submitted successfully with documents.");
+
+  } catch (err) {
+    console.error(err);
+    setMessage("❌ Server error. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= PRINT ================= */
   const handlePrint = () => {
@@ -289,6 +303,15 @@ export default function FileClaim() {
             <p className="receipt-note">
               You can track the status of your claim anytime from <b>My Claims</b>.
             </p>
+            <div className="receipt-details">
+  <p><b>Name:</b> {form.user_name}</p>
+  <p><b>Policy No:</b> {form.policy_number}</p>
+  <p><b>Claim Type:</b> {form.claim_type}</p>
+  <p><b>Incident Date:</b> {form.incident_date}</p>
+  <p><b>Amount:</b> ₹{form.amount}</p>
+  <p><b>Reason:</b> {form.reason}</p>
+</div>
+
 
             <div className="btn-row">
               <button

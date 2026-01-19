@@ -168,22 +168,7 @@
   color: white;
 }
 
-/* PRINT */
-.print-area {
-  display: none;
-}
 
-@media print {
-  .page-center {
-    display: none;
-  }
-  .print-area {
-    display: block;
-    padding: 40px;
-    background: white;
-    color:#353333
-  }
-}
 /* ================= REQUIRED DOCUMENTS ================= */
 .upload-desc {
   color: #374151; /* dark readable gray */
@@ -204,12 +189,12 @@
 }
 /* ================= REVIEW TEXT ================= */
 .review-box p {
-  font-size: 14px;
+  font-size: 17px;
   color: #0e0e0f; /* strong readable text */
 }
 
 .review-box b {
-  color: #4f46e5; /* highlight labels */
+  color: #6630bc; /* highlight labels */
 }
 /* ================= RECEIPT TEXT ================= */
 .receipt h3 {
@@ -220,7 +205,7 @@
 
 .receipt p {
   color: #2d3037;
-  font-size: 14px;
+  font-size: 16px;
   margin: 6px 0;
 }
 /* ================= REVIEW REASON TEXT ================= */
@@ -375,11 +360,12 @@
   display: flex;
   justify-content: space-between;
   margin: 6px 0;
-  font-size: 14px;
+  font-size: 15px;
+ 
 }
 
 .receipt-details .label {
-  color: #6b7280;
+  color: #151515;
   font-weight: 600;
 }
 
@@ -390,7 +376,7 @@
 
 .receipt-note {
   font-size: 13px;
-  color: #374151;
+  color: #131314;
   margin-bottom: 18px;
 }
 /* ===== CLAIM CARD TEXT FIX ===== */
@@ -426,3 +412,35 @@
   color: #065f46;
 }
 
+/* print recept*/
+
+@media print {
+
+  /* Hide everything */
+  body * {
+    display: visible !important;
+  }
+
+  /* Show ONLY the receipt card */
+  .card.receipt,
+  .card.receipt * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .card.receipt {
+    position: static;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide buttons */
+  button,
+  .btn-row {
+    display:none !important;
+  }
+}

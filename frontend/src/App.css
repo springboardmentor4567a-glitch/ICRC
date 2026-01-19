@@ -30,18 +30,19 @@ body {
 
 /* ================= BUTTONS ================= */
 .btn-purple {
-  background: linear-gradient(90deg, #6C63FF, #C77DFF);
+  background: linear-gradient(90deg, #4c44e8, #603d7b);
   color: white;
   border: none;
   padding: 12px 18px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
+   font-size: 15px;
   transition: 0.25s ease;
 }
 .btn-purple:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(108,99,255,0.5);
+  box-shadow: 0 8px 25px rgba(32, 28, 107, 0.5);
 }
 .btn-purple.full {
   width: 100%;
@@ -153,8 +154,8 @@ body {
   border-radius: 20px;
   background: linear-gradient(
     135deg,
-    rgba(17, 7, 212, 0.25),
-    rgb(92, 66, 113)
+    rgba(112, 107, 205, 0.997),
+    rgb(163, 90, 131)
   );
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.2);
@@ -169,7 +170,7 @@ body {
 
 .quote-header h3 {
   margin: 0;
-  color: white;
+  color: rgb(253, 255, 253);
 }
 
 .risk-pill {
@@ -202,7 +203,7 @@ body {
 }
 
 .quote-divider {
-  height: 1px;
+  height: 2px;
   background: rgb(255, 255, 255);
   margin: 16px 0;
 }
@@ -219,9 +220,10 @@ body {
   margin-top: 18px;
   padding: 14px;
   border-radius: 12px;
-  background: linear-gradient(90deg,#6C63FF,#C77DFF);
+  background: linear-gradient(90deg,#6C63FF,#c38eea);
   text-align: center;
   font-weight: 700;
+  color:white;
 }
 .quote-total div {
   font-size: 22px;

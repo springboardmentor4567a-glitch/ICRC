@@ -4,6 +4,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from database import Base
 from datetime import datetime
 
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -13,7 +15,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
      # ✅ Week 3 addition
     risk_profile = Column(JSONB, nullable=True)
-
+    role = Column(String, default="user")
 class Provider(Base):
     __tablename__ = "providers"
     id = Column(Integer, primary_key=True, index=True)
@@ -50,3 +52,20 @@ class Claim(Base):
     reason = Column(Text, nullable=False)
     status = Column(String, default="submitted")
     created_at = Column(DateTime, default=datetime.utcnow)
+class FraudFlag(Base):
+    __tablename__ = "fraud_flags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(Integer, ForeignKey("claims.id"))
+    rule_code = Column(String)
+    severity = Column(String)  # low, medium, high
+    details = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+class ClaimDocument(Base):
+    __tablename__ = "claim_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(Integer, ForeignKey("claims.id"))
+    filename = Column(String, nullable=False)
+    s3_key = Column(String, nullable=False)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)

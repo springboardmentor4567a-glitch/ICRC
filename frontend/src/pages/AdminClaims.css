@@ -1,0 +1,140 @@
+/* ===== PAGE ===== */
+.admin-page {
+  padding: 100px 40px 40px;
+  background: linear-gradient(180deg, #faf5ff, #fdfaff);
+  min-height: 100vh;
+}
+
+/* ===== TITLE ===== */
+.admin-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+/* ===== TABLE ===== */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+/* HEADERS */
+.admin-table th {
+  background: #ede9fe;
+  color: #1e1b4b;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 14px;
+  text-align: left;
+  border-bottom: 2px solid #ddd6fe;
+}
+
+/* ROWS */
+.admin-table td {
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;   /* 🔥 THIS FIXES TEXT VISIBILITY */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* HOVER */
+.admin-table tr:hover {
+  background: #f5f3ff;
+}
+
+/* ===== STATUS BADGES ===== */
+.status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.status.submitted {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.status.in_progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* COMMON */
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* APPROVE */
+.action-btn.approve {
+  background: #22c55e;
+  color: white;
+}
+
+.action-btn.approve:hover {
+  background: #16a34a;
+}
+
+/* IN PROGRESS */
+.action-btn.progress {
+  background: #f59e0b;
+  color: white;
+}
+
+.action-btn.progress:hover {
+  background: #d97706;
+}
+
+/* REJECT */
+.action-btn.reject {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn.reject:hover {
+  background: #dc2626;
+}
+.action-btn.view {
+  background: #6366f1;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.action-btn.view:hover {
+  background: #4f46e5;
+}
+

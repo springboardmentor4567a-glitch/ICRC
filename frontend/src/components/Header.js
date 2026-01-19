@@ -1,81 +1,72 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import "./Header.css";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-
-    fetch("http://127.0.0.1:8000/users/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then(setUser)
-      .catch(() => {});
-  }, []);
+  const role = localStorage.getItem("role");
 
   const logout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  // ✅ show back button except dashboard
-  const showBack = location.pathname !== "/dashboard";
+  /* 🔹 Admin routes */
+  const isAdminPage = location.pathname.startsWith("/admin");
 
-  // ✅ avatar first letter
-  const avatarLetter =
-    user?.name?.charAt(0).toUpperCase() ||
-    user?.email?.charAt(0).toUpperCase() ||
-    "U";
+  /* 🔹 Back button rules */
+  const showBack =
+    isAdminPage || location.pathname !== "/dashboard";
+
+  const handleBack = () => {
+    if (location.pathname === "/admin/dashboard") {
+      navigate("/dashboard"); // 👈 admin → user dashboard
+    } else {
+      navigate(-1); // normal back
+    }
+  };
 
   return (
     <header className="app-header">
-      {/* LEFT SIDE */}
+      {/* LEFT */}
       <div className="header-left">
         <div className="logo" onClick={() => navigate("/dashboard")}>
           ICRC
         </div>
 
         {showBack && (
-          <button className="back-btn" onClick={() => navigate(-1)}>
+          <button className="back-btn" onClick={handleBack}>
             ← Back
           </button>
         )}
       </div>
 
-      {/* RIGHT SIDE */}
-      <div className="profile-wrapper">
-        <div
-          className="profile-avatar"
-          onClick={() => setOpen(!open)}
-        >
-          {avatarLetter}
-        </div>
-
-        {open && (
-          <div className="profile-dropdown">
-            <p className="profile-email">{user?.email}</p>
-
-            <button
-              className="dropdown-btn"
-              onClick={() => navigate("/profile")}
-            >
-              View Profile
-            </button>
-
-            <button
-              className="dropdown-btn logout"
-              onClick={logout}
-            >
-              Logout
-            </button>
-          </div>
+      {/* RIGHT */}
+      <div className="header-right">
+        {/* ADMIN ONLY */}
+        {role === "admin" && (
+          <button
+            className="header-btn admin"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            🧑‍💼 Admin Dashboard
+          </button>
         )}
+
+        <button
+          className="header-btn profile"
+          onClick={() => navigate("/profile")}
+        >
+          👤 Profile
+        </button>
+
+        <button
+          className="header-btn logout"
+          onClick={logout}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );
