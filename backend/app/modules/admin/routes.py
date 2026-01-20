@@ -2,14 +2,23 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from functools import wraps
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 import os
 
-# ✅ FIXED IMPORTS: Absolute paths (Required for Modular Structure)
+# ✅ IMPORTS
 from app.extensions import db
 from app.modules.auth.models import User, Notification
 from app.modules.policies.models import Policy, UserPolicy
-from app.modules.claims.models import Claim, FraudFlag, ClaimDocument
-from app.modules.fraud.engine import run_fraud_checks 
+from app.modules.claims.models import Claim, FraudFlag
+from app.modules.admin.models import AdminLog
+# ✅ NEW IMPORT FOR EMAIL SERVICE
+from app.utils.email_service import send_notification_email 
+
+# Try-Except block for fraud engine to prevent crashes if module is missing
+try:
+    from app.modules.fraud.engine import run_fraud_checks
+except ImportError:
+    run_fraud_checks = lambda x: 0 # Fallback
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -20,7 +29,7 @@ def require_admin(fn):
     def wrapper(*args, **kwargs):
         try:
             user_id = get_jwt_identity()
-        except Exception as e:
+        except Exception:
             return jsonify({"message": "Missing Authorization Header"}), 401
 
         user = User.query.get(user_id)
@@ -59,7 +68,7 @@ def dashboard():
     }), 200
 
 
-# --- 🔍 CLAIMS MANAGEMENT ---
+# --- 🔍 CLAIMS MANAGEMENT (Optimized) ---
 @admin_bp.route('/claims', methods=['GET'])
 @require_admin
 def list_claims():
@@ -69,7 +78,10 @@ def list_claims():
     qtext = request.args.get('q', '').strip()
     severity = request.args.get('severity', '').strip().lower()
     
-    query = Claim.query
+    # ✅ OPTIMIZATION: Pre-load UserPolicy and User to prevent N+1 queries
+    query = Claim.query.options(
+        joinedload(Claim.user_policy).joinedload(UserPolicy.user)
+    )
 
     if status: 
         query = query.filter(Claim.status.ilike(status))
@@ -87,8 +99,9 @@ def list_claims():
     
     output = []
     for c in pagination.items:
+        # Get flags specifically for this claim
         flags = FraudFlag.query.filter_by(claim_id=c.id).all()
-        # Ensure we send 'is_ignored'
+        
         flag_data = [{
             "id": f.id, 
             "rule": f.rule_code, 
@@ -97,21 +110,29 @@ def list_claims():
             "is_ignored": f.is_ignored 
         } for f in flags]
 
+        # ✅ SAFETY CHECK: Handle cases where UserPolicy might be missing (orphaned claim)
+        up = c.user_policy
+        user = up.user if up else None
+
         output.append({
             "id": c.id,
             "claim_number": c.claim_number,
-            "user": c.user_policy.user.name,
-            "user_email": c.user_policy.user.email,
+            
+            # Safe access to user data
+            "user_id": user.id if user else None,
+            "user": user.name if user else "Unknown User",
+            "user_email": user.email if user else "N/A",
+            
             "amount": c.claim_amount,
             "status": c.status,
-            "incident_date": c.incident_date.strftime('%Y-%m-%d'),
+            "incident_date": c.incident_date.strftime('%Y-%m-%d') if c.incident_date else "N/A",
             "fraud_flags": flag_data,
-            # Pass document info so frontend doesn't crash
             "documents": [{"id": d.id, "file_name": d.file_name} for d in c.documents],
+            
             "policy_purchase": {
-                "policy_number": c.user_policy.policy_number,
-                "title": c.user_policy.policy.title if c.user_policy.policy else "Unknown",
-                "remaining_amount": c.user_policy.remaining_sum_insured
+                "policy_number": up.policy_number if up else "N/A",
+                "title": up.policy.title if (up and up.policy) else "Unknown Policy",
+                "remaining_amount": up.remaining_sum_insured if up else 0
             }
         })
     
@@ -122,7 +143,7 @@ def list_claims():
     }), 200
 
 
-# --- ⚖️ CLAIM DECISION (Fixed Reversal Logic) ---
+# --- ⚖️ CLAIM DECISION (With Email Integration) ---
 @admin_bp.route('/claims/<int:claim_id>/decision', methods=['PUT'])
 @require_admin
 def decide_claim(claim_id):
@@ -130,43 +151,102 @@ def decide_claim(claim_id):
         data = request.get_json()
         action = data.get('action')
         admin_comments = data.get('admin_comments', '')
-        claim = Claim.query.get(claim_id)
+        
+        # Load claim with relationships for email data
+        claim = Claim.query.options(joinedload(Claim.user_policy).joinedload(UserPolicy.user)).get(claim_id)
         
         if not claim: return jsonify({"message": "Claim not found"}), 404
+        if not claim.user_policy: return jsonify({"message": "Associated Policy not found"}), 400
 
-        # ✅ HANDLE REVERSAL: If previously Approved, Restore the Sum Insured
+        user = claim.user_policy.user # Get User for Email
+
+        # SAFE MATH: Ensure values are numbers
+        current_remaining = float(claim.user_policy.remaining_sum_insured or 0)
+        claim_amt = float(claim.claim_amount or 0)
+        approved_amt = float(claim.approved_amount or 0)
+
+        # 1. Handle Reversal (If changing from Approved -> Rejected)
         if claim.status == 'Approved' and action == 'reject':
-            if claim.approved_amount and claim.approved_amount > 0:
-                claim.user_policy.remaining_sum_insured += claim.approved_amount
-                claim.approved_amount = 0 # Reset approved amount
+            # Give money back to the policy balance
+            claim.user_policy.remaining_sum_insured = current_remaining + approved_amt
+            claim.approved_amount = 0
 
+        # 2. Handle Approval
         if action == 'approve':
-            # Prevent double deduction if already approved
             if claim.status != 'Approved':
                 claim.status = 'Approved'
-                up = claim.user_policy
-                approved_amt = min(claim.claim_amount, up.remaining_sum_insured)
-                claim.approved_amount = approved_amt
-                up.remaining_sum_insured = max(0, up.remaining_sum_insured - approved_amt)
                 
-                db.session.add(Notification(user_id=up.user_id, title="Claim Approved", message=f"Claim {claim.claim_number} approved for ₹{approved_amt}."))
+                # Calculate how much we can actually pay (Cap at remaining balance)
+                final_approved_amount = min(claim_amt, current_remaining)
+                
+                claim.approved_amount = final_approved_amount
+                claim.user_policy.remaining_sum_insured = max(0, current_remaining - final_approved_amount)
+                
+                # ✅ SEND "APPROVED" EMAIL
+                if user and user.email:
+                    send_notification_email(
+                        to_email=user.email,
+                        user_name=user.name,
+                        type='claim_approved',
+                        details={
+                            'claim_number': claim.claim_number,
+                            'amount': f"{final_approved_amount:,.2f}"
+                        }
+                    )
 
+                # Notify (Database)
+                db.session.add(Notification(
+                    user_id=claim.user_policy.user_id, 
+                    title="Claim Approved", 
+                    message=f"Claim {claim.claim_number} approved for ₹{final_approved_amount}."
+                ))
+
+        # 3. Handle Rejection
         elif action == 'reject':
             claim.status = 'Rejected'
             claim.admin_comments = admin_comments
-            db.session.add(Notification(user_id=claim.user_policy.user_id, title="Claim Rejected", message=f"Claim {claim.claim_number} rejected: {admin_comments}"))
             
+            # ✅ SEND "REJECTED" EMAIL
+            if user and user.email:
+                send_notification_email(
+                    to_email=user.email,
+                    user_name=user.name,
+                    type='claim_rejected',
+                    details={
+                        'claim_number': claim.claim_number,
+                        'reason': admin_comments
+                    }
+                )
+            
+            # Notify (Database)
+            db.session.add(Notification(
+                user_id=claim.user_policy.user_id, 
+                title="Claim Rejected", 
+                message=f"Claim {claim.claim_number} rejected. Reason: {admin_comments}"
+            ))
+        
         else:
             return jsonify({"message": "Invalid action"}), 400
 
+        # Log and Save
+        log = AdminLog(
+            admin_id=get_jwt_identity(),
+            action=f"Claim {action.upper()}",
+            target_type="Claim",
+            target_id=claim.id
+        )
+        db.session.add(log)
         db.session.commit()
-        return jsonify({"message": "Decision saved", "status": claim.status}), 200
+        
+        return jsonify({"message": "Decision saved & Email Sent", "status": claim.status}), 200
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": str(e)}), 500
+        print(f"ERROR in decide_claim: {str(e)}") 
+        return jsonify({"message": f"Server Error: {str(e)}"}), 500
 
 
-# --- 🚀 RE-ANALYZE CLAIM (Must exist for the button to work) ---
+# --- 🚀 RE-ANALYZE CLAIM ---
 @admin_bp.route('/claims/<int:claim_id>/reanalyze', methods=['POST'])
 @require_admin
 def reanalyze_claim(claim_id):
@@ -174,13 +254,9 @@ def reanalyze_claim(claim_id):
         claim = Claim.query.get(claim_id)
         if not claim: return jsonify({"message": "Not found"}), 404
         
-        # Run the engine
         flag_count = run_fraud_checks(claim)
-        
-        # Fetch newly created flags
         new_flags = FraudFlag.query.filter_by(claim_id=claim.id).all()
         
-        # Format for Frontend
         flag_data = [{
             "id": f.id,
             "rule": f.rule_code, 
@@ -196,11 +272,10 @@ def reanalyze_claim(claim_id):
             "new_status": claim.status
         }), 200
     except Exception as e:
-        print(f"Re-analysis Error: {e}")
         return jsonify({"message": "Analysis failed"}), 500
 
 
-# --- 🚩 TOGGLE FLAG STATUS ---
+# --- 🚩 TOGGLE FLAG ---
 @admin_bp.route('/flags/<int:flag_id>/toggle', methods=['PUT'])
 @require_admin
 def toggle_flag_status(flag_id):
@@ -217,8 +292,110 @@ def toggle_flag_status(flag_id):
             "claim_id": flag.claim_id
         }), 200
     except Exception as e:
-        db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+
+# --- 👥 USER MANAGEMENT ---
+@admin_bp.route('/users', methods=['GET'])
+@require_admin
+def list_users():
+    users = User.query.filter(User.is_admin == False).order_by(User.created_at.desc()).all()
+    out = []
+    for u in users:
+        has_fraud = False
+        try:
+            # Check for active fraud flags
+            active_flags = FraudFlag.query.join(Claim).join(UserPolicy).filter(
+                UserPolicy.user_id == u.id, 
+                FraudFlag.is_ignored == False
+            ).count()
+            if active_flags > 0: has_fraud = True
+        except: pass
+
+        out.append({
+            'id': u.id, 'name': u.name, 'email': u.email,
+            'is_banned': u.is_banned, 'has_fraud': has_fraud,
+            'created_at': u.created_at.isoformat()
+        })
+    return jsonify(out), 200
+
+
+# --- 👤 360 DEGREE USER VIEW ---
+@admin_bp.route('/users/<int:user_id>/full-profile', methods=['GET'])
+@require_admin
+def get_user_full_profile(user_id):
+    user = User.query.get(user_id)
+    if not user: return jsonify({"message": "User not found"}), 404
+
+    risk_score = 10 
+    
+    # Safety Check: Ensure profile is valid dictionary
+    profile_data = user.risk_profile if isinstance(user.risk_profile, dict) else {}
+    
+    try:
+        age = int(profile_data.get('age', 30))
+    except (ValueError, TypeError):
+        age = 30
+
+    try:
+        income = int(profile_data.get('income', 50000))
+    except (ValueError, TypeError):
+        income = 50000
+    
+    if age > 50: risk_score += 20
+    if income < 20000: risk_score += 20
+
+    total_claims = Claim.query.join(UserPolicy).filter(UserPolicy.user_id == user.id).count()
+    rejected_claims = Claim.query.join(UserPolicy).filter(UserPolicy.user_id == user.id, Claim.status == 'Rejected').count()
+    active_policies = UserPolicy.query.filter_by(user_id=user.id, status='active').count()
+
+    return jsonify({
+        "personal": {
+            "name": user.name,
+            "email": user.email,
+            "joined_at": user.created_at.strftime('%Y-%m-%d')
+        },
+        "risk": {
+            "score": risk_score,
+            "profile": user.risk_profile
+        },
+        "stats": {
+            "total_claims": total_claims,
+            "rejected_claims": rejected_claims,
+            "active_policies": active_policies
+        }
+    }), 200
+
+
+@admin_bp.route('/users/<int:user_id>/ban', methods=['PUT'])
+@require_admin
+def ban_user(user_id):
+    u = User.query.get(user_id)
+    if not u: return jsonify({"message": "User not found"}), 404
+    if u.is_admin: return jsonify({"message": "Cannot ban admin"}), 403
+    
+    u.is_banned = True
+    
+    log = AdminLog(admin_id=get_jwt_identity(), action="BAN USER", target_type="User", target_id=u.id)
+    db.session.add(log)
+    
+    db.session.commit()
+    return jsonify({"message": "User banned"}), 200
+
+
+@admin_bp.route('/users/<int:user_id>/unban', methods=['PUT'])
+@require_admin
+def unban_user(user_id):
+    u = User.query.get(user_id)
+    if not u: return jsonify({"message": "User not found"}), 404
+    
+    u.is_banned = False
+    
+    log = AdminLog(admin_id=get_jwt_identity(), action="UNBAN USER", target_type="User", target_id=u.id)
+    db.session.add(log)
+
+    db.session.commit()
+    return jsonify({"message": "User unbanned"}), 200
 
 
 # --- 📜 POLICY MANAGEMENT ---
@@ -228,7 +405,7 @@ def create_policy_endpoint():
     data = request.get_json()
     try:
         new_policy = Policy(
-            provider_id=data['provider_id'],
+            provider_id=data.get('provider_id'), 
             policy_type=data['policy_type'],
             title=data['title'],
             premium=float(data['premium']),
@@ -259,48 +436,3 @@ def delete_policy_endpoint(policy_id):
         return jsonify({"message": "Policy deleted"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
-
-
-# --- 👥 USER MANAGEMENT ---
-@admin_bp.route('/users', methods=['GET'])
-@require_admin
-def list_users():
-    users = User.query.filter(User.is_admin == False).order_by(User.created_at.desc()).all()
-    out = []
-    for u in users:
-        has_fraud = False
-        try:
-            active_flags = FraudFlag.query.join(Claim).join(UserPolicy).filter(
-                UserPolicy.user_id == u.id, 
-                FraudFlag.is_ignored == False
-            ).count()
-            if active_flags > 0: has_fraud = True
-        except: pass
-
-        out.append({
-            'id': u.id, 'name': u.name, 'email': u.email,
-            'is_banned': u.is_banned, 'has_fraud': has_fraud,
-            'created_at': u.created_at.isoformat()
-        })
-    return jsonify(out), 200
-
-@admin_bp.route('/users/<int:user_id>/ban', methods=['PUT'])
-@require_admin
-def ban_user(user_id):
-    u = User.query.get(user_id)
-    if not u: return jsonify({"message": "User not found"}), 404
-    if u.is_admin: return jsonify({"message": "Cannot ban admin"}), 403
-    
-    u.is_banned = True
-    db.session.commit()
-    return jsonify({"message": "User banned"}), 200
-
-@admin_bp.route('/users/<int:user_id>/unban', methods=['PUT'])
-@require_admin
-def unban_user(user_id):
-    u = User.query.get(user_id)
-    if not u: return jsonify({"message": "User not found"}), 404
-    u.is_banned = False
-    db.session.commit()
-    return jsonify({"message": "User unbanned"}), 200
-

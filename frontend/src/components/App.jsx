@@ -10,7 +10,7 @@ import FileClaim from './Claims/FileClaim.jsx';
 
 
 // Lazy loaded components
-const RiskProfile = React.lazy(() => import('./RiskProfile.jsx'));
+const RiskProfile = React.lazy(() => import('./Riskprofile/RiskProfile.jsx'));
 const RecommendationList = React.lazy(() => import('./Recommendations/RecommendationList.jsx'));
 const Policies = React.lazy(() => import('./Policies/policies.jsx')); 
 const PremiumCalculator = React.lazy(() => import('./Policies/PremiumCalculator.jsx'));

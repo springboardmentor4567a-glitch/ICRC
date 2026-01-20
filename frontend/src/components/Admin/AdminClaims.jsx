@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { listAdminClaims, decideClaim } from '../../adminApi';
+import { listAdminClaims, decideClaim, getUserFullProfile } from '../../adminApi';
 import AdminHeader from './AdminHeader';
 import './admin.css';
 
@@ -15,11 +15,11 @@ const AdminClaims = () => {
   const [adminComment, setAdminComment] = useState('');
   const [isReevaluating, setIsReevaluating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  
-  // ✅ NEW: Loading state for verdict submission
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Notification & Confirmation States
+  const [userProfile, setUserProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
   const [toast, setToast] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null);
 
@@ -38,12 +38,37 @@ const AdminClaims = () => {
   };
 
   const openCase = (c) => {
-      setSelected(c);
+      // ✅ STRICT RE-CLAIM DETECTION
+      // Only count rejections if they are for the SAME Policy AND Same Incident Date
+      const sameIncidentRejections = claims.filter(prev => 
+          prev.user_id === c.user_id && 
+          prev.policy_id === c.policy_id && 
+          prev.status === 'Rejected' &&
+          prev.incident_date === c.incident_date && // ✅ Match specific incident
+          prev.id !== c.id // Don't count self
+      );
+
+      const isReclaim = sameIncidentRejections.length > 0;
+
+      setSelected({ 
+          ...c, 
+          isReclaim, 
+          historyCount: sameIncidentRejections.length 
+      });
+      
       setIsReevaluating(false);
       setAdminComment('');
   };
 
-  // ✅ TOGGLE IGNORE/RESTORE
+  const handleViewProfile = async () => {
+      if(!selected || !selected.user_id) return;
+      setLoadingProfile(true);
+      const data = await getUserFullProfile(selected.user_id);
+      setLoadingProfile(false);
+      if(data) setUserProfile(data);
+      else showToast("Failed to load user profile", "error");
+  };
+
   const toggleFlagIgnore = async (flagId) => {
       const token = localStorage.getItem('access_token');
       try {
@@ -52,23 +77,18 @@ const AdminClaims = () => {
           });
           if(res.ok) {
               const data = await res.json();
-              
-              // Update View (Local State)
               setSelected(prev => ({
                   ...prev,
                   fraud_flags: prev.fraud_flags.map(f => f.id === flagId ? { ...f, is_ignored: data.is_ignored } : f)
               }));
-
-              // Update List Background
               setClaims(prev => prev.map(c => 
                   c.id === selected.id ? {
                       ...c,
                       fraud_flags: c.fraud_flags.map(f => f.id === flagId ? { ...f, is_ignored: data.is_ignored } : f)
                   } : c
               ));
-
-              showToast(data.is_ignored ? "Flag Ignored & Score Updated" : "Flag Restored", "info");
-          } else { showToast("Failed to update flag", "error"); }
+              showToast(data.is_ignored ? "Flag Ignored" : "Flag Restored", "info");
+          }
       } catch (e) { showToast("Network Error", "error"); }
   };
 
@@ -82,9 +102,9 @@ const AdminClaims = () => {
           if (res.ok) {
               const data = await res.json();
               setSelected(prev => ({ ...prev, fraud_flags: data.new_flags || [] }));
-              load(); // Refresh list to update scores there too
+              load();
               showToast("Analysis Updated!", "success");
-          } else { showToast("Analysis Failed", "error"); }
+          }
       } catch (e) { showToast("Server Error", "error"); }
       setAnalyzing(false);
   };
@@ -93,10 +113,7 @@ const AdminClaims = () => {
       setConfirmModal({
           title: "Ignore Risk Factor?",
           message: "This will remove the flag from the score calculation.",
-          onConfirm: () => {
-              toggleFlagIgnore(flagId);
-              setConfirmModal(null);
-          }
+          onConfirm: () => { toggleFlagIgnore(flagId); setConfirmModal(null); }
       });
   };
 
@@ -106,7 +123,6 @@ const AdminClaims = () => {
           if (f.is_ignored) return; 
           if (f.rule === 'SAME_DAY_CLAIM') score += 50; 
           else if (f.rule === 'MISSING_EVIDENCE') score += 40;
-          else if (f.rule === 'RETROACTIVE_CLAIM') score += 40;
           else if (f.severity === 'high') score += 30;
           else if (f.severity === 'medium') score += 15;
           else score += 5;
@@ -129,31 +145,16 @@ const AdminClaims = () => {
       setVerdictModal({ id, action, isReversal, prevStatus });
   };
 
-  // ✅ FIXED: Robust Verdict Submission with Feedback
   const submitVerdict = async () => {
       if(!verdictModal) return;
-      
-      setIsSubmitting(true); // Disable button & show spinner
-      
+      setIsSubmitting(true);
       try {
           const res = await decideClaim(verdictModal.id, verdictModal.action, adminComment);
-          
           if (res && res.status) {
-              // SUCCESS
               showToast(`Claim ${verdictModal.action === 'approve' ? 'Approved' : 'Rejected'}`, "success");
-              setVerdictModal(null); // Close modal
-              setSelected(null);     // Close case file
-              load();                // Reload list
-          } else {
-              // API ERROR
-              showToast("Failed to save decision. Check console.", "error");
-          }
-      } catch (e) {
-          console.error(e);
-          showToast("Network/Server Error", "error");
-      } finally {
-          setIsSubmitting(false); // Re-enable button
-      }
+              setVerdictModal(null); setSelected(null); load();
+          } else { showToast("Failed to save decision.", "error"); }
+      } catch (e) { showToast("Network Error", "error"); } finally { setIsSubmitting(false); }
   };
 
   const handleViewDoc = async (docId) => {
@@ -205,12 +206,20 @@ const AdminClaims = () => {
         </table>
       </div>
 
-      {/* 🕵️ CASE FILE POPUP */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
             <div className="case-file-modal" onClick={e => e.stopPropagation()}>
                 <div className={`case-header ${getRiskStyle(calculateRiskScore(selected.fraud_flags)).class}-border`}>
-                    <div className="case-title"><h3>Case #{selected.claim_number}</h3></div>
+                    <div className="case-title">
+                        <h3>Case #{selected.claim_number}</h3>
+                        
+                        {/* ✅ STRICT RE-CLAIM BADGE */}
+                        {selected.isReclaim && (
+                            <span className="reclaim-badge">
+                                ⚠️ RE-FILED CLAIM ({selected.historyCount} Prior Rejections for this Incident)
+                            </span>
+                        )}
+                    </div>
                     <button className="close-icon-btn" onClick={() => setSelected(null)}>✕</button>
                 </div>
 
@@ -219,14 +228,16 @@ const AdminClaims = () => {
                         <div className="data-widget">
                             <h4 className="widget-title">Claimant Details</h4>
                             <div className="detail-grid">
-                                <div className="info-box"><label>User</label><p>{selected.user}</p></div>
-                                <div className="info-box"><label>Policy</label><p className="mono-text">{selected.policy_purchase?.policy_number}</p></div>
-                                <div className="info-box"><label>Plan Title</label><p style={{color:'#4f46e5'}}>{selected.policy_purchase?.title}</p></div>
-                                <div className="info-box"><label>Remaining</label><p>₹{selected.policy_purchase?.remaining_amount?.toLocaleString()}</p></div>
+                                <div className="info-box">
+                                    <label>User</label><p>{selected.user}</p>
+                                    <button className="btn small secondary" style={{marginTop:'5px', width:'100%'}} onClick={handleViewProfile}>View Profile</button>
+                                </div>
+                                <div className="info-box"><label>Policy</label><p style={{color:'#4f46e5'}}>{selected.policy_purchase?.title}</p></div>
                                 <div className="info-box"><label>Claim</label><p className="highlight-amount">₹{selected.amount.toLocaleString()}</p></div>
-                                <div className="info-box"><label>Date</label><p>{selected.incident_date}</p></div>
+                                <div className="info-box"><label>Incident Date</label><p>{selected.incident_date}</p></div>
                             </div>
                         </div>
+                        
                         <div className="data-widget">
                             <h4 className="widget-title">Evidence Files</h4>
                             <div className="evidence-grid">
@@ -248,31 +259,16 @@ const AdminClaims = () => {
                                 {calculateRiskScore(selected.fraud_flags)}%
                             </div>
                             <div style={{fontWeight:700, color:'#64748b', marginBottom:'15px'}}>{getRiskStyle(calculateRiskScore(selected.fraud_flags)).label}</div>
-                            
-                            <button className="btn small secondary re-run-btn" onClick={handleReAnalyze} disabled={analyzing}>
-                                {analyzing ? <><span className="spinner"></span> Scanning...</> : '⚡ Re-Run AI Analysis'}
-                            </button>
+                            <button className="btn small secondary re-run-btn" onClick={handleReAnalyze} disabled={analyzing}>{analyzing ? 'Scanning...' : '⚡ Re-Run AI Analysis'}</button>
 
                             <div className="flag-stack" style={{marginTop:'20px'}}>
                                 {selected.fraud_flags.filter(f => !f.is_ignored).length === 0 && <div className="safe-notice">✅ No Active Flags</div>}
                                 {selected.fraud_flags.filter(f => !f.is_ignored).map((f) => (
                                     <div key={f.id} className={`flag-row ${f.severity}`}>
                                         <div style={{flex:1}}><strong>{f.rule}</strong><div>{f.reason}</div></div>
-                                        <button className="dismiss-btn" title="Ignore Flag" onClick={() => triggerDismiss(f.id)}>✕</button>
+                                        <button className="dismiss-btn" onClick={() => triggerDismiss(f.id)}>✕</button>
                                     </div>
                                 ))}
-
-                                {selected.fraud_flags.some(f => f.is_ignored) && (
-                                    <>
-                                        <div className="divider-label">Ignored Factors</div>
-                                        {selected.fraud_flags.filter(f => f.is_ignored).map((f) => (
-                                            <div key={f.id} className="flag-row ignored">
-                                                <div style={{flex:1, textDecoration:'line-through', opacity:0.6}}><strong>{f.rule}</strong></div>
-                                                <button className="restore-btn" title="Restore Flag" onClick={() => toggleFlagIgnore(f.id)}>↺</button>
-                                            </div>
-                                        ))}
-                                    </>
-                                )}
                             </div>
                         </div>
 
@@ -288,8 +284,6 @@ const AdminClaims = () => {
                                 <div className="action-stack">
                                     <button className="btn-lg approve" onClick={() => initiateDecision(selected.id, 'approve')}>✅ Approve</button>
                                     <button className="btn-lg reject" onClick={() => initiateDecision(selected.id, 'reject')}>⚠️ Reject</button>
-                                    <button className="btn-lg ban" onClick={() => initiateDecision(selected.id, 'reject')}>⛔ Ban User</button>
-                                    {isReevaluating && <button className="btn small secondary" onClick={() => setIsReevaluating(false)}>Cancel Change</button>}
                                 </div>
                             )}
                         </div>
@@ -299,7 +293,27 @@ const AdminClaims = () => {
         </div>
       )}
 
-      {/* CONFIRMATION MODAL */}
+      {userProfile && (
+          <div className="modal-overlay" style={{zIndex: 5500}} onClick={() => setUserProfile(null)}>
+              <div className="case-file-modal" style={{height:'auto', width:'900px'}} onClick={e => e.stopPropagation()}>
+                  <div className="case-header">
+                      <div className="case-title"><h3>{userProfile.personal.name}</h3></div>
+                      <button className="close-icon-btn" onClick={() => setUserProfile(null)}>✕</button>
+                  </div>
+                  <div className="case-body-grid" style={{padding:'20px'}}>
+                      <div className="data-widget full-width">
+                          <h4 className="widget-title">User Risk Summary</h4>
+                          <div className="detail-grid">
+                              <div className="info-box"><label>Total Claims</label><p>{userProfile.stats.total_claims}</p></div>
+                              <div className="info-box"><label>Rejected Claims</label><p style={{color:'#ef4444'}}>{userProfile.stats.rejected_claims}</p></div>
+                              <div className="info-box"><label>Risk Score</label><p>{userProfile.risk.score}%</p></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      )}
+
       {confirmModal && (
           <div className="modal-overlay" style={{zIndex: 4000}}>
               <div className="mini-modal">
@@ -313,31 +327,16 @@ const AdminClaims = () => {
           </div>
       )}
 
-      {/* ✅ VERDICT MODAL (Fixed Z-Index & Click Handling) */}
       {verdictModal && (
           <div className="modal-overlay" style={{zIndex: 5000}} onClick={() => setVerdictModal(null)}>
               <div className="verdict-popup" onClick={(e) => e.stopPropagation()}>
-                  <div className={`verdict-banner ${verdictModal.action}`}>
-                      <h2>{verdictModal.action === 'approve' ? 'Approve Claim' : 'Reject Claim'}</h2>
-                  </div>
+                  <div className={`verdict-banner ${verdictModal.action}`}><h2>{verdictModal.action.toUpperCase()}</h2></div>
                   <div className="verdict-content">
-                      {verdictModal.isReversal && <div className="reversal-alert"><strong>⚠️ Decision Reversal</strong><p>Changing from <strong>{verdictModal.prevStatus}</strong> to <strong>{verdictModal.action}</strong>.</p></div>}
-                      <p>You are about to <strong>{verdictModal.action}</strong> this claim.</p>
-                      
-                      {verdictModal.action === 'reject' && (
-                          <textarea className="verdict-textarea" rows="3" placeholder="Reason for rejection (Required)..." value={adminComment} onChange={e => setAdminComment(e.target.value)}></textarea>
-                      )}
-                      
+                      <p>Confirm {verdictModal.action} for Claim #{selected.claim_number}?</p>
+                      {verdictModal.action === 'reject' && <textarea className="verdict-textarea" placeholder="Reason..." value={adminComment} onChange={e => setAdminComment(e.target.value)}></textarea>}
                       <div className="verdict-actions">
-                          <button className="btn secondary" onClick={() => setVerdictModal(null)} disabled={isSubmitting}>Cancel</button>
-                          
-                          <button 
-                            className={`btn ${verdictModal.action === 'approve' ? 'primary' : 'danger'}`} 
-                            onClick={submitVerdict} 
-                            disabled={(verdictModal.action === 'reject' && !adminComment.trim()) || isSubmitting}
-                          >
-                              {isSubmitting ? 'Processing...' : 'Confirm'}
-                          </button>
+                          <button className="btn secondary" onClick={() => setVerdictModal(null)}>Cancel</button>
+                          <button className="btn primary" onClick={submitVerdict}>Confirm</button>
                       </div>
                   </div>
               </div>

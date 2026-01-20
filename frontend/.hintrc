@@ -15,11 +15,12 @@
           "-moz-appearance",
           "-webkit-appearance",
           "appearance",
-          "backdrop-filter",
+          "-webkit-backdrop-filter",
           "scroll-snap-type",
           "scroll-snap-align",
           "text-decoration-thickness",
-          "user-select"
+          "user-select",
+          "backdrop-filter"
         ]
       }
     ]

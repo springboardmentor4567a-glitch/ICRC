@@ -189,3 +189,25 @@ export const getUserDashboard = async () => {
     return null;
   }
 };
+export const updateRiskProfile = async (data) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/users/profile/risk`, {
+      method: 'PUT', // or POST depending on your backend
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to update profile');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("API Error:", error);
+    return null;
+  }
+};

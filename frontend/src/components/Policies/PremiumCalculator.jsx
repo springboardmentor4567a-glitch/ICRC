@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPolicies, purchasePolicy, getMyPolicies } from '../../api'; 
 import './PremiumCalculator.css';
@@ -6,9 +6,10 @@ import './PremiumCalculator.css';
 export default function PremiumCalculator() {
     const navigate = useNavigate();
     const [allPolicies, setAllPolicies] = useState([]);
-    const [activePolicyIds, setActivePolicyIds] = useState(new Set()); // ✅ Store active IDs
+    const [activePolicyIds, setActivePolicyIds] = useState(new Set()); 
     const [loadingData, setLoadingData] = useState(true);
     
+    // Default values
     const [formData, setFormData] = useState({
         age: 30,
         policyType: 'life', 
@@ -23,11 +24,10 @@ export default function PremiumCalculator() {
         show: false, step: 'confirm', policy: null, customPrice: 0, customCoverage: 500000
     });
 
-    // 1. Fetch Data (Policies + User's Active Plans)
+    // 1. Fetch Data
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Parallel fetch for speed
                 const [policiesData, myPoliciesData] = await Promise.all([
                     getPolicies(),
                     getMyPolicies()
@@ -36,7 +36,6 @@ export default function PremiumCalculator() {
                 if (Array.isArray(policiesData)) setAllPolicies(policiesData);
                 
                 if (Array.isArray(myPoliciesData)) {
-                    // Filter only active policies and store their IDs
                     const activeSet = new Set(
                         myPoliciesData.filter(p => p.status === 'active').map(p => p.policy_id)
                     );
@@ -49,17 +48,18 @@ export default function PremiumCalculator() {
         loadData();
     }, []);
 
-    // ✅ Define Filtered Policies
-    const filteredPolicies = allPolicies.filter(p => {
-        const type = (p.type || p.policy_type || '').toLowerCase();
-        return type === formData.policyType.toLowerCase();
-    });
-
     // 2. Calculation Logic
-    const calculatePremium = (data) => {
+    const calculatePremium = useCallback((data) => {
         const { age, policyType, coverageAmount, selectedPolicyId } = data;
         let baseRate = 0;
         let planTitle = "Market Standard Plan";
+
+        // Logic: For live estimation, treat invalid inputs safely (without blocking typing)
+        const numericAge = parseInt(age);
+        const calculationAge = isNaN(numericAge) || numericAge < 18 ? 18 : numericAge;
+
+        const numericCoverage = parseInt(coverageAmount);
+        const calculationCoverage = isNaN(numericCoverage) || numericCoverage < 500000 ? 500000 : numericCoverage;
 
         // If specific plan selected
         if (selectedPolicyId) {
@@ -70,15 +70,15 @@ export default function PremiumCalculator() {
             }
         } 
         
-        // Default Market Rates
+        // Default Market Rates (fallback)
         if (baseRate === 0) {
             if (policyType === 'life') baseRate = 5.5;   
             if (policyType === 'health') baseRate = 8.0; 
             if (policyType === 'auto') baseRate = 18.0;  
         }
 
-        const ageFactor = 1 + ((parseInt(age) - 18) * 0.025);
-        const estimatedAnnual = (parseInt(coverageAmount) / 1000) * baseRate * ageFactor;
+        const ageFactor = 1 + ((calculationAge - 18) * 0.025);
+        const estimatedAnnual = (calculationCoverage / 1000) * baseRate * ageFactor;
 
         return {
             planName: planTitle,
@@ -86,19 +86,32 @@ export default function PremiumCalculator() {
             monthly: Math.round(estimatedAnnual / 12),
             halfYearly: Math.round(estimatedAnnual / 2)
         };
-    };
+    }, [allPolicies]); 
 
-    // 3. Handle Changes with Validation
+    const filteredPolicies = allPolicies.filter(p => {
+        const type = (p.type || p.policy_type || '').toLowerCase();
+        return type === formData.policyType.toLowerCase();
+    });
+
+    // Handle Input Changes (Allows typing freely)
     const handleChange = (e) => {
         const { name, value } = e.target;
         let finalValue = value;
 
-        // Validation Logic
         if (name === 'age') {
-            if (value > 100) finalValue = 100;
+            if (value === '') finalValue = ''; 
+            else {
+                let val = parseInt(value);
+                if (val > 100) finalValue = 100;
+            }
         }
+        
         if (name === 'coverageAmount') {
-            if (value > 20000000) finalValue = 20000000; // Max 2 Cr
+            if (value === '') finalValue = '';
+            else {
+                let val = parseInt(value);
+                if (val > 20000000) finalValue = 20000000;
+            }
         }
 
         const newData = {
@@ -110,7 +123,7 @@ export default function PremiumCalculator() {
         setResult(calculatePremium(newData));
     };
 
-    // Strict Validation on Blur
+    // Auto-correct on Blur (Optional convenience)
     const handleBlur = (e) => {
         const { name, value } = e.target;
         let cleanVal = parseInt(value) || 0;
@@ -120,8 +133,8 @@ export default function PremiumCalculator() {
             if (cleanVal > 100) cleanVal = 100;
         }
         if (name === 'coverageAmount') {
-            if (cleanVal < 100000) cleanVal = 100000; // Min 1 Lakh
-            if (cleanVal > 20000000) cleanVal = 20000000; // Max 2 Cr
+            if (cleanVal < 500000) cleanVal = 500000; 
+            if (cleanVal > 20000000) cleanVal = 20000000; 
             cleanVal = Math.round(cleanVal / 1000) * 1000; 
         }
 
@@ -138,18 +151,38 @@ export default function PremiumCalculator() {
 
     useEffect(() => {
         if (!loadingData) setResult(calculatePremium(formData));
-    }, [loadingData, allPolicies]);
+    }, [loadingData, formData, calculatePremium]);
 
     // --- BUY MODAL HANDLERS ---
+    
+    // ✅ STRICT VALIDATION BEFORE OPENING MODAL
     const openBuyModal = () => {
+        // 1. Validate Age
+        const ageVal = parseInt(formData.age);
+        if (!ageVal || ageVal < 18 || ageVal > 100) {
+            alert("Age must be between 18 and 100 to purchase a policy.");
+            return;
+        }
+
+        // 2. Validate Coverage
+        const coverageVal = parseInt(formData.coverageAmount);
+        if (!coverageVal || coverageVal < 500000 || coverageVal > 20000000) {
+            alert("Minimum coverage amount allowed is ₹5,00,000 (5 Lakhs).");
+            return;
+        }
+
+        // 3. Find Policy
         const policy = allPolicies.find(p => p.id === parseInt(formData.selectedPolicyId));
-        if (!policy) return;
+        if (!policy) {
+            alert("Please select a specific plan from the list to proceed.");
+            return;
+        }
 
         setBuyModal({ 
             show: true, 
             step: 'confirm', 
             policy: policy, 
-            customCoverage: parseInt(formData.coverageAmount),
+            customCoverage: coverageVal,
             customPrice: result.annual 
         });
     };
@@ -157,7 +190,6 @@ export default function PremiumCalculator() {
     const closeBuyModal = () => {
         setBuyModal({ ...buyModal, show: false });
         if(buyModal.step === 'success') {
-            // Update active policies locally to show "Active" immediately
             setActivePolicyIds(prev => new Set(prev).add(buyModal.policy.id));
             navigate('/profile');
         }
@@ -169,8 +201,8 @@ export default function PremiumCalculator() {
         try {
             const res = await purchasePolicy(buyModal.policy.id, buyModal.customCoverage);
             if (res.policy_number) setBuyModal(prev => ({ ...prev, step: 'success' }));
-            else alert("Failed");
-        } catch { alert("Error"); }
+            else alert("Failed to purchase policy.");
+        } catch { alert("Transaction Failed. Please try again."); }
     };
 
     // Helpers
@@ -178,11 +210,9 @@ export default function PremiumCalculator() {
     const getQuickAmounts = () => [500000, 1000000, 2500000, 5000000, 10000000];
     const formatLabel = (amt) => amt >= 10000000 ? (amt/10000000)+'Cr' : (amt/100000)+'L';
 
-    // Receipt Math
     const basePrice = Math.round(buyModal.customPrice / 1.18);
     const taxPrice = buyModal.customPrice - basePrice;
 
-    // ✅ CHECK ACTIVE STATUS
     const isSelectedPolicyActive = formData.selectedPolicyId && activePolicyIds.has(parseInt(formData.selectedPolicyId));
 
     return (
@@ -238,12 +268,15 @@ export default function PremiumCalculator() {
                                     <div className="slider-input-row">
                                         <input 
                                             type="range" name="age" min="18" max="100" 
-                                            value={formData.age} onChange={handleChange} 
+                                            value={parseInt(formData.age) || 18} 
+                                            onChange={handleChange} 
                                             className="custom-slider" 
                                         />
                                         <input 
                                             type="number" name="age" min="18" max="100" 
-                                            value={formData.age} onChange={handleChange} onBlur={handleBlur}
+                                            value={formData.age} 
+                                            onChange={handleChange} 
+                                            onBlur={handleBlur}
                                             className="number-box" 
                                         />
                                     </div>
@@ -252,18 +285,21 @@ export default function PremiumCalculator() {
 
                             {/* COVERAGE INPUT */}
                             <div className="form-group">
-                                <label>Coverage Amount (₹1L - ₹2Cr)</label>
+                                <label>Coverage Amount (Min: ₹5L)</label>
                                 <div className="slider-input-row">
                                     <input 
                                         type="range" name="coverageAmount" 
-                                        min="100000" max="20000000" step="50000" 
-                                        value={formData.coverageAmount} onChange={handleChange} 
+                                        min="500000" max="20000000" step="50000" 
+                                        value={parseInt(formData.coverageAmount) || 500000} 
+                                        onChange={handleChange} 
                                         className="custom-slider" 
                                     />
                                     <input 
                                         type="number" name="coverageAmount" 
-                                        min="100000" max="20000000" step="1000"
-                                        value={formData.coverageAmount} onChange={handleChange} onBlur={handleBlur}
+                                        min="500000" max="20000000" step="1000"
+                                        value={formData.coverageAmount} 
+                                        onChange={handleChange} 
+                                        onBlur={handleBlur}
                                         className="number-box large" 
                                     />
                                 </div>
@@ -298,14 +334,14 @@ export default function PremiumCalculator() {
 
                             <div className="features-list">
                                 <div className="feature-item">
-                                    <span>🛡️ Coverage:</span> <strong>₹{formatRupee(formData.coverageAmount)}</strong>
+                                    <span>🛡️ Coverage:</span> 
+                                    <strong>₹{formatRupee(Math.max(parseInt(formData.coverageAmount) || 0, 500000))}</strong>
                                 </div>
                                 <div className="feature-item">
                                     <span>⏳ Term:</span> <strong>1 Year</strong>
                                 </div>
                             </div>
 
-                            {/* BUTTONS: Check if Selected Plan is Active */}
                             <div style={{display:'flex', flexDirection:'column', gap:'10px', padding:'0 30px 30px'}}>
                                 {formData.selectedPolicyId ? (
                                     <>
@@ -334,7 +370,7 @@ export default function PremiumCalculator() {
                 </div>
             </div>
 
-            {/* BUY POPUP (Receipt Style) */}
+            {/* BUY POPUP */}
             {buyModal.show && (
                 <div className="drawer-overlay">
                     <div className="drawer-content">

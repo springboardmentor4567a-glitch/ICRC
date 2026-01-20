@@ -87,3 +87,15 @@ export const unbanUser = async (id) => {
     return await res.json();
   } catch (e) { return null; }
 };
+export const getUserFullProfile = async (userId) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/full-profile`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+};

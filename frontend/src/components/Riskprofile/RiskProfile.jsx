@@ -59,7 +59,7 @@ const RiskProfile = () => {
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ FIXED: Correctly toggle policy types
+  // Handle Policy Type Tiles
   const handlePolicyTypeChange = (e) => {
     const { value, checked } = e.target;
     
@@ -105,8 +105,11 @@ const RiskProfile = () => {
       if (response.status === 401) throw new Error("Unauthorized");
       if (!response.ok) throw new Error('Server error');
 
+      // Update local storage if needed for instant UI updates
       localStorage.setItem('userRiskProfile', JSON.stringify(formData));
-      navigate('/recommendations');
+      
+      alert("Profile Saved Successfully!");
+      navigate('/profile'); // Redirect back to profile page after saving
 
     } catch (err) {
       console.error("API Error:", err);
@@ -114,7 +117,7 @@ const RiskProfile = () => {
         alert("Session expired. Please log in again.");
         navigate('/login');
       } else {
-        setError('Failed to save profile.');
+        setError('Failed to save profile. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -130,12 +133,14 @@ const RiskProfile = () => {
       <div className="risk-profile-container">
         
         <div style={{ textAlign: 'left', marginBottom: '20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <button className="back-btn" onClick={() => navigate('/')}>
-            ← Back to Dashboard
+          <button className="back-btn" type="button" onClick={() => navigate('/profile')}>
+            ← Back to Portfolio
           </button>
-          <div>
-            <span style={{marginRight:10}}>Estimated Risk:</span>
-            <span className={`risk-badge ${computeRiskLevel(formData)}`}>{computeRiskLevel(formData).toUpperCase()}</span>
+          <div className="risk-score-display">
+            <span>Estimated Risk:</span>
+            <span className={`risk-badge ${computeRiskLevel(formData)}`}>
+              {computeRiskLevel(formData).toUpperCase()}
+            </span>
           </div>
         </div>
 
@@ -148,9 +153,7 @@ const RiskProfile = () => {
           <div className="form-group">
             <label>I am looking for recommendations on:</label>
             
-            {/* ✅ FIXED: Used 'label' tag instead of 'div' so clicking works */}
             <div className="policy-type-grid">
-                
                 {/* Health Tile */}
                 <label className="policy-card-checkbox">
                     <input 
@@ -243,7 +246,7 @@ const RiskProfile = () => {
           {/* --- 3. Conditional Sections --- */}
           
           {showHealthFields && (
-            <div className="conditional-section">
+            <div className="conditional-section animate-fade">
                 <h4 style={{marginBottom:'15px', color:'#2c3e50', marginTop:0}}>Health & Lifestyle</h4>
                 <div className="form-group">
                     <label>Current Health Condition</label>
@@ -267,7 +270,7 @@ const RiskProfile = () => {
           )}
 
           {showAutoFields && (
-            <div className="conditional-section">
+            <div className="conditional-section animate-fade">
                 <h4 style={{marginBottom:'15px', color:'#2c3e50', marginTop:0}}>Vehicle Details</h4>
                 <div className="form-group checkbox-row">
                     <input 
@@ -282,9 +285,16 @@ const RiskProfile = () => {
             </div>
           )}
 
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Analyzing Profile...' : 'Generate Recommendations'}
-          </button>
+          {/* --- 4. Action Buttons --- */}
+          <div className="action-buttons">
+            <button type="button" className="cancel-btn" onClick={() => navigate('/profile')}>
+              Cancel
+            </button>
+            <button type="submit" className="save-btn" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Profile'}
+            </button>
+          </div>
+
         </form>
       </div>
     </div>
@@ -293,6 +303,7 @@ const RiskProfile = () => {
 
 export default RiskProfile;
 
+// Risk Calculation Logic
 function computeRiskLevel(data){
   try{
     let score = 0;

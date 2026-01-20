@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.modules.auth.models import User, Notification
+from app.modules.auth.models import User
 from app.modules.policies.models import UserPolicy
 from app.modules.claims.models import Claim
 
@@ -13,37 +13,54 @@ def get_user_dashboard():
     user = User.query.get(user_id)
     if not user: return jsonify({"message": "User not found"}), 404
 
-    policies = UserPolicy.query.filter_by(user_id=user_id).order_by(UserPolicy.start_date.desc()).all()
-    policy_list = [{
-        "id": p.id,
-        "policy_id": p.policy_id,
-        "policy_number": p.policy_number,
-        "title": p.policy.title if p.policy else "Unknown",
-        "provider": p.policy.provider.name if p.policy and p.policy.provider else "Unknown",
-        "start_date": p.start_date.strftime('%Y-%m-%d'),
-        "end_date": p.end_date.strftime('%Y-%m-%d'),
-        "premium": p.premium_amount,
-        "coverage": p.coverage_amount,
-        "status": p.status
-    } for p in policies]
+    # 1. Fetch ONLY Active Policies
+    active_policies = UserPolicy.query.filter_by(user_id=user_id, status='active').all()
+    
+    # Create a set of active IDs for filtering claims later
+    active_policy_ids = {p.id for p in active_policies}
 
-    claims = Claim.query.join(UserPolicy).filter(UserPolicy.user_id == user_id).order_by(Claim.created_at.desc()).all()
-    claim_list = [{
-        "id": c.id,
-        "claim_number": c.claim_number,
-        "policy": c.user_policy.policy.title if c.user_policy.policy else "Unknown",
-        "date": c.incident_date.strftime('%Y-%m-%d'),
-        "amount": c.claim_amount,
-        "status": c.status,
-        "description": c.incident_description
-    } for c in claims]
+    policy_list = []
+    for p in active_policies:
+        prov_name = "Unknown"
+        if p.policy and p.policy.provider_data:
+            prov_name = p.policy.provider_data.name
+            
+        policy_list.append({
+            "id": p.policy_id,       # Catalog ID (for buying new/recommendations)
+            "user_policy_id": p.id,  # Ownership ID (for cancelling)
+            "policy_number": p.policy_number,
+            "title": p.policy.title if p.policy else "Unknown",
+            "provider": prov_name,
+            "coverage_amount": p.coverage_amount,
+            "remaining": p.remaining_sum_insured,
+            "end_date": p.end_date.strftime('%Y-%m-%d'),
+            "status": p.status
+        })
 
-    notifs = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).all()
-    notif_list = [{"id": n.id, "title": n.title, "message": n.message, "date": n.created_at.strftime('%Y-%m-%d %H:%M')} for n in notifs]
+    # 2. Fetch Claims (Only for Active Policies)
+    # We join UserPolicy to ensure we only get claims for this user
+    all_claims = Claim.query.join(UserPolicy).filter(UserPolicy.user_id == user_id)\
+        .order_by(Claim.created_at.desc()).all()
+    
+    claim_list = []
+    for c in all_claims:
+        # ✅ FILTER: Only show claims if the policy is still active
+        if c.user_policy_id in active_policy_ids:
+            claim_list.append({
+                "claim_number": c.claim_number,
+                "status": c.status,
+                "amount": c.claim_amount,
+                # ✅ SAFE ACCESS: Handle missing description gracefully
+                "description": getattr(c, 'description', 'No description'), 
+                "admin_comments": c.admin_comments,
+                "date": c.incident_date.strftime('%Y-%m-%d'),
+                "policy": c.user_policy.policy.title if c.user_policy and c.user_policy.policy else "Unknown",
+                # ✅ CRITICAL: Send ID for Refile Button
+                "policy_id": c.user_policy.policy_id if c.user_policy else None
+            })
 
     return jsonify({
-        "user": {"name": user.name, "email": user.email, "risk_profile": user.risk_profile or {}},
+        "user": {"name": user.name, "email": user.email, "id": user.id},
         "policies": policy_list,
-        "claims": claim_list,
-        "notifications": notif_list
+        "recent_claims": claim_list
     }), 200

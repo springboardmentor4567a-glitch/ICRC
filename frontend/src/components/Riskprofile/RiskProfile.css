@@ -12,8 +12,8 @@
 .risk-profile-container {
   background: #ffffff;
   width: 100%;
-  max-width: 700px; /* Made wider to fit side-by-side inputs */
-  padding: 20px;
+  max-width: 700px;
+  padding: 30px;
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   font-family: 'Segoe UI', sans-serif;
@@ -29,21 +29,39 @@
   font-weight: 700;
 }
 
-/* --- NEW: Grid Layout for Short Inputs --- */
+.risk-score-display {
+  font-size: 0.9rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.risk-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+.risk-badge.low { background-color: #dcfce7; color: #15803d; }
+.risk-badge.medium { background-color: #fef9c3; color: #a16207; }
+.risk-badge.high { background-color: #fee2e2; color: #b91c1c; }
+
+/* Grid Layout */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-/* On mobile, stack them back to 1 column */
 @media (max-width: 600px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
 }
 
-/* --- NEW: Policy Interest Cards (Tiles) --- */
+/* Policy Tiles */
 .policy-type-grid {
   display: flex;
   gap: 15px;
@@ -56,14 +74,12 @@
   position: relative;
 }
 
-/* Hide the actual checkbox */
 .policy-card-checkbox input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
 }
 
-/* The visible tile */
 .policy-card-label {
   display: flex;
   flex-direction: column;
@@ -85,7 +101,6 @@
   border-color: #cbd5e1;
 }
 
-/* Style when selected */
 .policy-card-checkbox input:checked + .policy-card-label {
   border-color: #2563eb;
   background-color: #eff6ff;
@@ -107,14 +122,18 @@
 }
 
 .form-group input[type="number"], 
+.form-group input[type="text"], 
 .form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 16px;
+  box-sizing: border-box;
   transition: all 0.2s;
   background-color: #f8fafc;
+  color: #334155;
+  font-family: inherit;
 }
 
 .form-group input:focus, 
@@ -132,7 +151,6 @@
   border-radius: 12px;
   margin-bottom: 25px;
   border: 1px solid #bae6fd;
-  animation: fadeIn 0.3s ease-in-out;
 }
 
 .checkbox-row {
@@ -157,43 +175,69 @@
   font-weight: 500;
 }
 
-/* Buttons */
-.submit-btn {
-  width: 100%;
-  padding: 16px;
+/* --- Action Buttons --- */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.save-btn {
+  flex: 2;
+  padding: 14px;
   background-color: #2563eb;
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 10px;
   transition: background-color 0.2s;
 }
 
-.submit-btn:hover {
+.save-btn:hover {
   background-color: #1d4ed8;
+}
+
+.save-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 14px;
+  background-color: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
 }
 
 .back-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #334155;
-  color: #ffffff;
+  background: none;
+  color: #64748b;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 0.9rem;
 }
 
 .back-btn:hover {
-  background-color: #1e293b;
-  transform: translateX(-3px);
+  color: #1e293b;
+  text-decoration: underline;
 }
 
 .error-msg {
@@ -205,32 +249,11 @@
   margin-bottom: 20px;
 }
 
+.animate-fade {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-/* src/components/RiskProfile.css */
-
-/* ✅ FIXED: Added input[type="text"] to the list so Income field gets styled */
-.form-group input[type="number"], 
-.form-group input[type="text"], 
-.form-group select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 16px;
-  box-sizing: border-box;
-  transition: all 0.2s;
-  background-color: #f8fafc;
-  color: #334155; /* Ensure text color is consistent */
-  font-family: inherit;
-}
-
-.form-group input:focus, 
-.form-group select:focus {
-  border-color: #3b82f6;
-  background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  outline: none;
 }

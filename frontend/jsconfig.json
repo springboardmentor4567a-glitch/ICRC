@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "jsx": "react",
-    "checkJs": false
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "checkJs": false,
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": [
-    "node_modules",
-    "build"
-  ]
+  "exclude": ["node_modules", "build", "dist"]
 }

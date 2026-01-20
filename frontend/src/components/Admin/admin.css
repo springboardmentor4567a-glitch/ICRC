@@ -33,7 +33,9 @@ body {
 
 /* --- HEADER --- */
 .admin-header {
-    background: var(--glass-bg); backdrop-filter: blur(20px);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(20px); /* ✅ Safari Fix */
+    backdrop-filter: blur(20px);
     border: var(--glass-border); box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     border-radius: var(--radius); padding: 15px 30px;
     display: flex; justify-content: space-between; align-items: center;
@@ -63,7 +65,10 @@ body {
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin-top: 40px; }
 .stat-card {
     background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.25);
-    padding: 25px; border-radius: 20px; backdrop-filter: blur(15px); transition: transform 0.3s;
+    padding: 25px; border-radius: 20px;
+    -webkit-backdrop-filter: blur(15px); /* ✅ Safari Fix */
+    backdrop-filter: blur(15px);
+    transition: transform 0.3s;
 }
 .stat-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.25); }
 .stat-value { font-size: 2.5rem; font-weight: 800; display: block; margin-bottom: 5px; color: white; }
@@ -150,7 +155,12 @@ body {
 .btn.danger { background: var(--danger-gradient); color: white; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
 
 /* --- CASE FILE MODAL --- */
-.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
+.modal-overlay { 
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); 
+    -webkit-backdrop-filter: blur(10px); /* ✅ Safari Fix */
+    backdrop-filter: blur(10px); 
+    display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; 
+}
 .case-file-modal { background: #f8fafc; width: 1100px; max-width: 95%; height: 90vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.6); }
 
 .case-header { padding: 20px 30px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
@@ -267,3 +277,8 @@ body {
 .policy-admin-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border-color: var(--primary); }
 .btn-delete { background: white; border: 1px solid #fecaca; color: #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.8rem; }
 .btn-delete:hover { background: #ef4444; color: white; }
+.reclaim-badge {
+    background: #fff7ed; color: #c2410c; border: 1px solid #fdba74;
+    font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+    font-weight: 800; margin-left: 10px; vertical-align: middle;
+}
