@@ -1,0 +1,1 @@
+@echo off\necho Starting Celery Worker for INSUREZ...\necho.\necho Make sure Redis is running on localhost:6379\necho.\ncd /d \"%~dp0\"\ncelery -A app.tasks worker --loglevel=info --pool=solo\npause

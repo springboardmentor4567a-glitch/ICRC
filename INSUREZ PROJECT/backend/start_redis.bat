@@ -1,0 +1,1 @@
+@echo off\necho Starting Redis Server for INSUREZ...\necho.\necho If Redis is not installed, download from: https://github.com/microsoftarchive/redis/releases\necho.\necho Starting Redis on localhost:6379...\nredis-server\npause
