@@ -1,0 +1,110 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: radial-gradient(circle at top, #7193d6, #cbced5fb);
+}
+
+
+.calculator-container {
+  position: relative;
+  display: flex;
+  gap: 40px;
+  padding: 40px;
+  min-height: 90vh;
+  color: #100505;
+  justify-content: center;
+  align-items: center;
+}
+/* ===== LEFT FORM ===== */
+.calculator-form {
+  width: 420px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 30px;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+}
+
+.calculator-title {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 25px;
+  color:rgb(10, 46, 87);
+ 
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #080909;
+ font-weight: bold;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 18px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #7b6cff, #9f8cff);
+  color: #fef3f3;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* ===== RESULT CARD ===== */
+.calculator-result {
+  width: 400px;
+  height: 300px;
+  padding: 28px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #abbfe8, #cdc9d9);
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.risk-badge {
+  position:absolute;
+  top: 8px;
+  right: 16px;
+  background: #00c853;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.result-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+.premium-amount {
+  font-size: 40px;
+  font-weight: 900;
+  margin: 12px 0;
+  
+}
+
+.yearly-premium {
+  font-size: 20px;
+  opacity: 2;
+  font-weight: 600;
+}
+

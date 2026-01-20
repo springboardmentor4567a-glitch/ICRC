@@ -1,0 +1,139 @@
+.compare-page {
+  min-height: 100vh;
+  padding: 40px;
+  background: linear-gradient(to right, #f4f8ff, #717a90);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Titles */
+.compare-title-main {
+  text-align: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.compare-subtitle {
+  text-align: center;
+  font-size: 16px;
+  color: #475569;
+  margin-bottom: 40px;
+}
+
+/* Cards */
+.policy-card-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.policy-card {
+  width: 340px;
+  padding: 28px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.policy-card h3 {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1e40af;
+}
+
+.policy-card p {
+  margin: 6px 0;
+  color: #334155;
+  font-size: 15px;
+}
+
+.policy-card:hover {
+  transform: translateY(-8px);
+}
+
+.policy-card.selected {
+  border: 2px solid #2563eb;
+  background: #eef4ff;
+}
+
+/* Buttons */
+.select-btn {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  background: #eff1f9;
+  color: rgb(69, 77, 224);
+  cursor: pointer;
+}
+
+.select-btn:hover {
+  background: #28ed3fbe;
+}
+
+/* Compare Button */
+.compare-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 35px;
+}
+
+.compare-btn {
+  padding: 14px 42px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(37,99,235,0.4);
+}
+
+.compare-btn:hover {
+  transform: scale(1.05);
+  color: #88a1e4;
+}
+
+/* Table */
+.comparison-heading {
+  text-align: center;
+  font-size: 28px;
+  margin: 50px 0 20px;
+  font-weight: 700;
+}
+
+.table-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.compare-table {
+  width: 85%;
+  background: rgba(190, 193, 244, 0.477);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.compare-table th {
+  background: #2563eb;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.compare-table td {
+  padding: 16px;
+  text-align: center;
+  font-size: 15px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+

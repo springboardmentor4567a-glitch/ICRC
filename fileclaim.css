@@ -1,0 +1,42 @@
+.claim-wrapper {
+  min-height: 100vh;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #6fa7de, #eef2ff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.claim-wrapper h2 {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+.claim-form {
+  background: rgb(255, 255, 255);
+  padding: 30px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.claim-form input,
+.claim-form textarea {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.claim-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(90deg, #2563eb, #4f46e5);
+  color: white;
+  cursor: pointer;
+}

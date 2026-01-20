@@ -1,0 +1,59 @@
+.admin-container {
+  padding: 35px;
+  color:black;
+}
+.admin-container h2 {
+  text-align: center;
+  margin-bottom: 35px;
+  font-size: 34px;
+  font-weight: 800;
+  color: #1f2937; /* dark slate */
+}
+
+.admin-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.admin-card {
+  display: flex;
+  justify-content: space-between;
+  background: #ffffffdd;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.status.submitted {
+  background: orange;
+  color: white;
+}
+
+.status.approved {
+  background: green;
+  color: white;
+}
+
+.status.rejected {
+  background: crimson;
+  color: white;
+}
+
+.actions button {
+  padding: 8px 14px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actions .reject {
+  background: crimson;
+  color: white;
+}
