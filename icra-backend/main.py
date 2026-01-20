@@ -1,5 +1,17 @@
 from sqlalchemy.orm import joinedload
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    status,
+    Request,
+    BackgroundTasks,
+    UploadFile,
+    File,
+    Form,
+)
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -9,6 +21,7 @@ from typing import List, Optional
 import models, schemas, database
 import recommendations
 import fraud_engine
+import utils
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -34,6 +47,8 @@ SENDER_EMAIL = os.getenv("MAIL_USERNAME")
 SENDER_PASSWORD = os.getenv("MAIL_PASSWORD")
 
 app = FastAPI(title="ICRA API")
+# Mount the static directory so frontend can access uploaded files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
@@ -213,6 +228,20 @@ def check_admin_access(user: models.User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
+
+# --- HELPER: ADMIN LOGGER ---
+def log_admin_action(db: Session, admin_id: int, action: str, target_type: str, target_id: int):
+    """Records an admin action into the database for audit trails."""
+    new_log = models.AdminLog(
+        admin_id=admin_id,
+        action=action,
+        target_type=target_type,
+        target_id=target_id,
+        timestamp=datetime.utcnow(),
+    )
+    db.add(new_log)
+    db.commit()
+
 def send_email_otp(to_email: str, otp: str):
     if not SENDER_EMAIL or not SENDER_PASSWORD:
         print(f"\n[MOCK EMAIL] To: {to_email} | OTP: {otp}\n")
@@ -249,7 +278,11 @@ def send_email_otp(to_email: str, otp: str):
         return False
 
 @app.post("/auth/send-otp")
-def send_otp(request: schemas.EmailRequest, db: Session = Depends(database.get_db)):
+def send_otp(
+    request: schemas.EmailRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
+):
     if db.query(models.User).filter(models.User.email == request.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -257,11 +290,11 @@ def send_otp(request: schemas.EmailRequest, db: Session = Depends(database.get_d
     otp_storage[request.email] = otp
     
     print(f"------------\n[DEBUG] OTP for {request.email}: {otp}\n------------")
-    
-    if send_email_otp(request.email, otp):
-        return {"message": "OTP sent successfully"}
-    else:
-        raise HTTPException(status_code=500, detail="Failed to send email")
+
+    # Run email sending in background (Non-blocking)
+    background_tasks.add_task(send_email_otp, request.email, otp)
+
+    return {"message": "OTP processing in background"}
 
 @app.post("/auth/register", response_model=schemas.Token)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
@@ -508,17 +541,37 @@ def delete_notification(notif_id: int, db: Session = Depends(database.get_db), c
 
 @app.post("/claims")
 @limiter.limit("10/minute")
-def file_claim(request: Request, claim: schemas.ClaimCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    purchase = db.query(models.UserPolicy).filter(models.UserPolicy.id == claim.purchase_id, models.UserPolicy.user_id == current_user.id).first()
+def file_claim(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    purchase_id: int = Form(...),
+    incident_type: str = Form(...),
+    description: str = Form(...),
+    claim_amount: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    purchase = (
+        db.query(models.UserPolicy)
+        .filter(models.UserPolicy.id == purchase_id, models.UserPolicy.user_id == current_user.id)
+        .first()
+    )
     if not purchase:
         raise HTTPException(status_code=404, detail="Policy not found")
 
+    # 1. Save File Locally
+    file_path = utils.save_upload_file(
+        file, f"claim_{current_user.id}_{random.randint(1000,9999)}.pdf"
+    )
+
     new_claim = models.Claim(
         user_id=current_user.id,
-        purchase_id=claim.purchase_id,
-        incident_type=claim.incident_type,
-        description=claim.description,
-        claim_amount=claim.claim_amount
+        purchase_id=purchase_id,
+        incident_type=incident_type,
+        description=description + f" [Evidence: {file_path}]",
+        claim_amount=claim_amount,
+        status="Pending",
     )
     db.add(new_claim)
     
@@ -526,16 +579,65 @@ def file_claim(request: Request, claim: schemas.ClaimCreate, db: Session = Depen
     notif = models.Notification(
         user_id=current_user.id,
         title="Claim Filed Successfully",
-        message=f"Claim for ₹{claim.claim_amount} submitted. Status: Pending.",
+        message=f"Claim for ₹{claim_amount} submitted. Status: Pending.",
         type="info"
     )
     db.add(notif)
     
     db.commit()
+    db.refresh(new_claim)
     
-    fraud_engine.run_fraud_check(db, new_claim.id)
+    # 3. Async Fraud Check (Non-blocking)
+    background_tasks.add_task(fraud_engine.run_fraud_check, db, new_claim.id)
     
-    return {"msg": "Claim submitted"}
+    return {"msg": "Claim submitted with document"}
+
+
+@app.get("/download/invoice/{purchase_id}")
+def download_invoice(
+    purchase_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    purchase = (
+        db.query(models.UserPolicy)
+        .options(joinedload(models.UserPolicy.policy))
+        .filter(models.UserPolicy.id == purchase_id, models.UserPolicy.user_id == current_user.id)
+        .first()
+    )
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    # Generate PDF
+    file_path = utils.generate_invoice_pdf(
+        current_user.name,
+        purchase.policy.policy_name,
+        purchase.policy.premium,
+        str(purchase.purchase_date.date()),
+        purchase.id,
+    )
+
+    return FileResponse(
+        path=file_path,
+        filename=f"Invoice_{purchase.id}.pdf",
+        media_type="application/pdf",
+    )
+
+
+@app.post("/admin/refresh-market")
+def refresh_market_rates(
+    user: models.User = Depends(check_admin_access),
+    db: Session = Depends(database.get_db),
+):
+    """Simulates live API data by updating premiums slightly"""
+    policies = db.query(models.Policy).all()
+    for p in policies:
+        # Fluctuate premium by +/- 10%
+        change = random.uniform(0.9, 1.1)
+        p.premium = int(p.premium * change)
+
+    db.commit()
+    return {"msg": "Market rates updated from external exchange"}
 
 @app.get("/claims", response_model=List[schemas.ClaimResponse])
 def get_my_claims(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -656,6 +758,9 @@ def process_claim_action(claim_id: int, payload: schemas.ClaimAction, user: mode
     )
     db.add(notif)
     db.commit()
+
+    # [NEW] Log the action
+    log_admin_action(db, user.id, f"Claim {payload.action}", "Claim", claim.id)
     return {"msg": f"Claim {payload.action} successfully"}
 
 @app.post("/admin/policies")
@@ -663,6 +768,10 @@ def create_policy(policy: schemas.PolicyCreate, user: models.User = Depends(chec
     new_policy = models.Policy(**policy.dict())
     db.add(new_policy)
     db.commit()
+    db.refresh(new_policy)  # Need ID for log
+
+    # [NEW] Log the action
+    log_admin_action(db, user.id, "Created Policy", "Policy", new_policy.id)
     return {"msg": "Policy created successfully"}
 
 @app.put("/admin/policies/{policy_id}")
@@ -723,4 +832,31 @@ def ban_user(user_id: int, user: models.User = Depends(check_admin_access), db: 
     db.query(models.UserPolicy).filter(models.UserPolicy.user_id == user_id).delete()
     db.query(models.User).filter(models.User.id == user_id).delete()
     db.commit()
+
+    # [NEW] Log the action
+    log_admin_action(db, user.id, "Banned User", "User", user_id)
     return {"msg": "User and their data removed."}
+
+
+@app.get("/admin/audit-logs")
+def get_audit_logs(user: models.User = Depends(check_admin_access), db: Session = Depends(database.get_db)):
+    """Fetches the last 50 admin actions for the audit trail"""
+    logs = (
+        db.query(models.AdminLog)
+        .options(joinedload(models.AdminLog.admin))
+        .order_by(models.AdminLog.timestamp.desc())
+        .limit(50)
+        .all()
+    )
+
+    # Format for frontend
+    return [
+        {
+            "id": log.id,
+            "admin": log.admin.name if log.admin else "Unknown",
+            "action": log.action,
+            "target": f"{log.target_type} #{log.target_id}",
+            "time": log.timestamp,
+        }
+        for log in logs
+    ]

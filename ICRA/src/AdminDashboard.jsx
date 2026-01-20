@@ -3,11 +3,12 @@ import {
     ShieldAlert, Users, FileText, CheckCircle, XCircle, 
     Activity, ArrowLeft, Plus, Trash2, ShieldCheck, LogOut, 
     Edit, Eye, Paperclip, AlertTriangle, Search, Filter, Save, 
-    FileIcon, Download, Clock, DollarSign, User, ShoppingCart, Calendar, ChevronDown, ChevronUp
+    FileIcon, Download, Clock, DollarSign, User, ShoppingCart, Calendar, ChevronDown, ChevronUp,
+    ClipboardList
 } from 'lucide-react';
 
 const AdminDashboard = ({ onLogout }) => {
-    // Views: 'dashboard' | 'policies' | 'users' | 'risk'
+    // Views: 'dashboard' | 'policies' | 'users' | 'risk' | 'logs'
     const [currentView, setCurrentView] = useState('dashboard');
     
     // Data States
@@ -15,6 +16,7 @@ const AdminDashboard = ({ onLogout }) => {
     const [claims, setClaims] = useState([]);
     const [policies, setPolicies] = useState([]);
     const [users, setUsers] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]); // New State
 
     // --- LIVE UPDATE LOGIC (Requirement 2) ---
     // This effect runs once on mount, then sets up a timer to run every 5 seconds
@@ -44,6 +46,12 @@ const AdminDashboard = ({ onLogout }) => {
             if (cRes.ok) setClaims(await cRes.json());
             if (pRes.ok) setPolicies(await pRes.json());
             if (uRes.ok) setUsers(await uRes.json());
+
+            // Fetch audit logs only when viewing logs
+            if (currentView === 'logs') {
+                const logRes = await fetch('http://127.0.0.1:8000/admin/audit-logs', { headers });
+                if (logRes.ok) setAuditLogs(await logRes.json());
+            }
 
         } catch (err) { 
             // If auth fails (token expired), stop polling
@@ -264,6 +272,13 @@ const AdminDashboard = ({ onLogout }) => {
                     desc="Manage accounts." 
                     badge={`${users.length} Users`}
                     onClick={() => setCurrentView('users')} 
+                />
+                <NavTile 
+                    title="Audit Logs" 
+                    icon={<ClipboardList size={28} />} 
+                    color="orange" 
+                    desc="Track admin actions." 
+                    onClick={() => setCurrentView('logs')} 
                 />
             </div>
         </div>
@@ -626,6 +641,56 @@ const AdminDashboard = ({ onLogout }) => {
         </div>
     );
 
+    const LogsView = () => (
+        <div className="max-w-6xl mx-auto p-6 animate-fade-in text-white">
+            <button onClick={() => setCurrentView('dashboard')} className="mb-6 flex items-center gap-2 text-slate-500 hover:text-white"><ArrowLeft size={20}/> Back</button>
+            <div className="flex justify-between items-end mb-6">
+                <h2 className="text-2xl font-bold flex items-center gap-2"><ClipboardList className="text-orange-500"/> System Audit Trail</h2>
+                <button onClick={() => fetchData()} className="text-sm text-slate-400 hover:text-white flex gap-1 items-center"><Activity size={14}/> Refresh</button>
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-950 text-slate-500 uppercase text-xs font-bold">
+                        <tr>
+                            <th className="p-4">Admin</th>
+                            <th className="p-4">Action</th>
+                            <th className="p-4">Target</th>
+                            <th className="p-4 text-right">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 text-slate-300">
+                        {auditLogs.length === 0 ? (
+                            <tr><td colSpan="4" className="p-8 text-center text-slate-500">No logs found.</td></tr>
+                        ) : (
+                            auditLogs.map(log => (
+                                <tr key={log.id} className="hover:bg-slate-800/50 transition-colors">
+                                    <td className="p-4 font-bold text-white flex items-center gap-2">
+                                        <div className="w-6 h-6 bg-slate-800 rounded-full flex items-center justify-center text-xs text-slate-400">A</div>
+                                        {log.admin}
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold border ${
+                                            log.action.includes('Reject') || log.action.includes('Ban') ? 'bg-red-900/20 text-red-400 border-red-900/50' : 
+                                            log.action.includes('Approve') ? 'bg-green-900/20 text-green-400 border-green-900/50' : 
+                                            'bg-blue-900/20 text-blue-400 border-blue-900/50'
+                                        }`}>
+                                            {log.action}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 font-mono text-xs text-slate-400">{log.target}</td>
+                                    <td className="p-4 text-right text-slate-500 text-xs">
+                                        {new Date(log.time).toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-slate-950 text-white font-sans">
             <Header />
@@ -633,6 +698,7 @@ const AdminDashboard = ({ onLogout }) => {
             {currentView === 'risk' && <RiskView />}
             {currentView === 'policies' && <PoliciesView />}
             {currentView === 'users' && <UsersView />}
+            {currentView === 'logs' && <LogsView />}
             <ClaimInspectorModal />
             <UserActivityModal />
         </div>

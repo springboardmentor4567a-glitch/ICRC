@@ -124,108 +124,28 @@ const MyPolicies = ({ onBack }) => {
         }
     };
 
-    // --- INVOICE GENERATOR ---
-    const generateInvoice = (policy) => {
-        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-        const userName = userData.name || "Valued Customer";
-        const userEmail = userData.email || "";
-        const baseAmount = policy.premium;
-        const gstRate = 0.18;
-        const taxAmount = baseAmount * gstRate;
-        const totalAmount = baseAmount + taxAmount;
+    const downloadInvoice = async (purchaseId) => {
+        const token = localStorage.getItem('access_token');
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/download/invoice/${purchaseId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-        const printWindow = window.open('', '', 'height=800,width=800');
-        const htmlContent = `
-            <html>
-            <head>
-                <title>Invoice - ${policy.policyNumber}</title>
-                <style>
-                    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; }
-                    .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); }
-                    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-                    .logo { font-size: 24px; font-weight: bold; color: #2563EB; display: flex; align-items: center; gap: 5px; }
-                    .invoice-details { text-align: right; }
-                    .invoice-details h2 { margin: 0; color: #1e293b; }
-                    .invoice-details p { margin: 5px 0 0; color: #64748b; font-size: 14px; }
-                    .info-section { display: flex; justify-content: space-between; margin-bottom: 40px; }
-                    .info-block h3 { font-size: 12px; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; letter-spacing: 1px; }
-                    .info-block p { margin: 0; font-size: 15px; font-weight: 500; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                    th { text-align: left; padding: 15px; background: #f8fafc; color: #475569; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
-                    td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-                    .total-row td { font-weight: bold; border-bottom: none; }
-                    .amount { text-align: right; }
-                    .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #94a3b8; }
-                    .status { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #dcfce7; color: #166534; }
-                </style>
-            </head>
-            <body>
-                <div class="invoice-box">
-                    <div class="header">
-                        <div class="logo">🛡️ ICRA INSURANCE</div>
-                        <div class="invoice-details">
-                            <h2>INVOICE</h2>
-                            <p>#INV-${new Date().getFullYear()}-${1000 + policy.id}</p>
-                            <p>Date: ${policy.purchaseDate}</p>
-                        </div>
-                    </div>
-                    <div class="info-section">
-                        <div class="info-block">
-                            <h3>Billed To</h3>
-                            <p>${userName}</p>
-                            <p style="font-size: 13px; color: #64748b; font-weight: 400;">${userEmail}</p>
-                        </div>
-                        <div class="info-block" style="text-align: right;">
-                            <h3>Policy Status</h3>
-                            <span class="status">ACTIVE • PAID</span>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Provider</th>
-                                <th>Term</th>
-                                <th class="amount">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <strong>${policy.name}</strong><br>
-                                    <span style="font-size: 12px; color: #64748b;">Policy No: ${policy.policyNumber}</span>
-                                </td>
-                                <td>${policy.provider}</td>
-                                <td>1 Year</td>
-                                <td class="amount">₹${baseAmount.toLocaleString()}</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding-top: 20px;">Subtotal</td>
-                                <td class="amount" style="padding-top: 20px;">₹${baseAmount.toLocaleString()}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="text-align: right; color: #64748b;">GST (18%)</td>
-                                <td class="amount" style="color: #64748b;">₹${taxAmount.toLocaleString()}</td>
-                            </tr>
-                            <tr class="total-row">
-                                <td colspan="3" style="text-align: right; font-size: 18px;">Total Paid</td>
-                                <td class="amount" style="font-size: 18px; color: #2563EB;">₹${totalAmount.toLocaleString()}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <div class="footer">
-                        <p>Thank you for choosing ICRA for your insurance needs.</p>
-                        <p>This is a computer-generated receipt and does not require a physical signature.</p>
-                    </div>
-                </div>
-                <script>window.onload = function() { window.print(); }</script>
-            </body>
-            </html>
-        `;
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Invoice_${purchaseId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } else {
+                alert("Error downloading invoice");
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     return (
@@ -303,7 +223,7 @@ const MyPolicies = ({ onBack }) => {
                                                 <div><p className="text-xs text-slate-400 mb-1">Payment Mode</p><p className="font-semibold text-slate-700 text-sm">Yearly</p></div>
                                             </div>
                                             <div className="flex flex-wrap gap-3 pt-2 border-t border-slate-100">
-                                                <button onClick={() => generateInvoice(policy)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"><Download size={16} /> Invoice</button>
+                                                <button onClick={() => downloadInvoice(policy.id)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"><Download size={16} /> Invoice</button>
                                                 <button onClick={() => setSelectedClaimPolicy(policy)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"><FileText size={16} /> File Claim</button>
                                                 <button onClick={() => handleRenew(policy.id)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm transition-colors ml-auto"><RefreshCw size={16} /> Renew</button>
                                             </div>

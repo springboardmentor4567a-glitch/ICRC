@@ -19,6 +19,7 @@ class User(Base):
     policies = relationship("UserPolicy", back_populates="user")
     recommendations = relationship("Recommendation", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
+    admin_logs = relationship("AdminLog", back_populates="admin")
 
 class Policy(Base):
     __tablename__ = "policies"
@@ -100,5 +101,8 @@ class AdminLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     admin_id = Column(Integer, ForeignKey("users.id"))
     action = Column(String)
+    target_type = Column(String)
     target_id = Column(Integer)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+    admin = relationship("User", back_populates="admin_logs")

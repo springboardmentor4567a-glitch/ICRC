@@ -34,23 +34,24 @@ const FileClaimModal = ({ policy, onClose, onSuccess }) => {
         if (!isFormValid) return;
         setLoading(true);
 
-        // Simulate Upload
-        await new Promise(r => setTimeout(r, 1500));
-
         try {
             const token = localStorage.getItem('access_token');
+
+            // Use FormData for File Upload
+            const formDataPayload = new FormData();
+            formDataPayload.append('purchase_id', policy.id);
+            formDataPayload.append('incident_type', formData.incident_type);
+            formDataPayload.append('description', formData.description);
+            formDataPayload.append('claim_amount', formData.amount);
+            formDataPayload.append('file', formData.file); // The actual file object
+
             const res = await fetch('http://127.0.0.1:8000/claims', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
+                    // Do NOT set Content-Type here; browser sets it automatically for FormData
                 },
-                body: JSON.stringify({
-                    purchase_id: policy.id,
-                    incident_type: formData.incident_type,
-                    description: formData.description,
-                    claim_amount: parseInt(formData.amount)
-                })
+                body: formDataPayload
             });
 
             if (res.ok) {
