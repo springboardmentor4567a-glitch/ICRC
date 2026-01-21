@@ -1,0 +1,420 @@
+/* ===== MULTI-TIER ARCHITECTURE FOR CENTERED CLAIM FORM ===== */
+:root {
+  --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --tier-1-bg: rgba(255, 255, 255, 0.95);
+  --tier-2-bg: rgba(255, 255, 255, 0.9);
+  --tier-3-bg: rgba(255, 255, 255, 0.85);
+  --glass-effect: backdrop-filter: blur(20px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--page-bg);
+  color: var(--text-color);
+  line-height: var(--line-height);
+  min-height: 100vh;
+  padding: var(--body-padding);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== TIER 1: MAIN CONTAINER (CENTERED) ===== */
+.claim-submission-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.claim-form-container {
+  width: 100%;
+  max-width: 800px;
+  background: var(--tier-1-bg);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  var(--glass-effect);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== TIER 2: HEADER SECTION ===== */
+.claim-form-header {
+  background: var(--tier-2-bg);
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.claim-form-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.claim-form-header h2 {
+  color: #1f2937;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.claim-form-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== TIER 3: FORM CONTENT ===== */
+.claim-form-content {
+  padding: 2rem;
+}
+
+.claim-form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.claim-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.claim-form-group input[type="text"],
+.claim-form-group input[type="email"],
+.claim-form-group input[type="date"],
+.claim-form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.claim-form-group input[type="text"]:focus,
+.claim-form-group input[type="email"]:focus,
+.claim-form-group input[type="date"]:focus,
+.claim-form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: #f8fafc;
+}
+
+.claim-form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ===== TIER 4: FILE UPLOAD SECTION ===== */
+.file-input {
+  position: relative;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-input:hover {
+  border-color: #667eea;
+  background: #f0f4f8;
+}
+
+.file-input label {
+  cursor: pointer;
+  font-weight: 500;
+  color: #6b7280;
+  display: block;
+}
+
+.file-input label small {
+  display: block;
+  margin-top: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.file-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e0f2fe;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #0369a1;
+  border-left: 3px solid #0ea5e9;
+}
+
+/* ===== FORM ACTIONS ===== */
+.claim-form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.claim-form-actions button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+}
+
+.claim-form-actions button:first-child {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.claim-form-actions button:first-child:hover {
+  background: #e5e7eb;
+}
+
+.claim-form-actions button:last-child {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.claim-form-actions button:last-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.claim-form-actions button:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== ERROR HANDLING ===== */
+.error-message {
+  color: #dc2626;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.claim-form-group.error input,
+.claim-form-group.error textarea {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+/* ===== LOADING SPINNER ===== */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== THEME CONTROLS ===== */
+.theme-controls {
+  background: var(--tier-3-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.theme-controls button {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-controls button:hover {
+  background: #f3f4f6;
+}
+
+.theme-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.theme-buttons button {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.theme-buttons button:hover {
+  background: #f3f4f6;
+}
+
+.theme-buttons button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.theme-info {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.theme-info ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.theme-info li {
+  margin-bottom: 0.25rem;
+}
+
+/* ===== RESPONSIVE DESIGN FOR MULTI-TIER ===== */
+@media (max-width: 768px) {
+  .claim-submission-page {
+    padding: 1rem;
+  }
+
+  .claim-form-container {
+    max-width: 100%;
+  }
+
+  .claim-form-header {
+    padding: 1.5rem;
+  }
+
+  .claim-form-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .claim-form-content {
+    padding: 1.5rem;
+  }
+
+  .claim-form-actions {
+    flex-direction: column;
+  }
+
+  .claim-form-actions button {
+    width: 100%;
+  }
+
+  .file-input {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .claim-form-header {
+    padding: 1rem;
+  }
+
+  .claim-form-content {
+    padding: 1rem;
+  }
+
+  .claim-form-icon {
+    font-size: 2rem;
+  }
+
+  .claim-form-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .file-input {
+    padding: 1rem;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  textarea,
+  input[type="file"] {
+    border-width: 3px;
+  }
+
+  button {
+    border: 2px solid #003366;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+  }
+
+  .claim-form-container {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    display: none;
+  }
+}
