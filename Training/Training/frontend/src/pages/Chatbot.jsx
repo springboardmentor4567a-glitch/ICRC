@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+remimport React, { useState, useRef, useEffect } from "react";
 import { API_BASE_URL } from "../utils/api";
 
 export default function Chatbot() {
