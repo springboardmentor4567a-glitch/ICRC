@@ -1,0 +1,291 @@
+/* Professional Insurance Claim Form - CENTERED MIDDLE PAGE */
+:root {
+  /* CSS variables will be set dynamically by ThemeManager */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  line-height: var(--line-height);
+  min-height: 100vh;
+  /* CENTER THE FORM - Full viewport flex */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--body-padding);
+}
+
+/* MAIN CONTAINER - Perfectly centered */
+.container {
+  max-width: var(--container-max-width);
+  width: 100%;
+  max-width: 500px; /* Fixed width for perfect centering */
+  padding: var(--container-padding);
+  background-color: var(--secondary-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  /* Remove margin: 0 auto - handled by flex parent */
+}
+
+h2 {
+  text-align: center;
+  color: var(--primary-blue);
+  font-size: clamp(24px, 5vw, 32px);
+  margin-bottom: var(--h2-margin);
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: var(--form-group-margin);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--label-margin);
+  font-weight: bold;
+  color: var(--primary-blue);
+  font-size: var(--label-font-size);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: var(--input-padding-y) var(--input-padding-x);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--input-font-size);
+  background-color: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+  background-color: var(--focus-bg);
+  transform: translateY(-1px);
+}
+
+select:hover {
+  border-color: var(--focus-border);
+  background-color: var(--focus-bg);
+  transform: translateY(-1px);
+}
+
+textarea {
+  min-height: var(--textarea-min-height);
+  resize: vertical;
+  line-height: var(--line-height);
+}
+
+input[type="file"] {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 12px 16px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all var(--transition-duration) var(--transition-timing);
+  width: 100%;
+}
+
+input[type="file"]:hover,
+input[type="file"]:focus {
+  border-color: var(--focus-border);
+  background-color: var(--focus-bg);
+}
+
+button {
+  width: 100%;
+  padding: var(--button-padding-y) var(--button-padding-x);
+  background-color: var(--primary-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--button-font-size);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: var(--button-min-height);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
+button:hover {
+  background-color: var(--primary-blue-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow);
+}
+
+button:active {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
+}
+
+button:disabled {
+  background-color: var(--disabled-bg);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loading-spinner {
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  border: var(--border-width) solid var(--spinner-bg);
+  border-top: var(--border-width) solid var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Responsive Design - Maintains centering */
+@media (max-width: 1024px) {
+  :root {
+    --container-max-width: 700px;
+    --container-padding: 35px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 20px; /* Reduced padding on mobile */
+  }
+  
+  :root {
+    --container-padding: 25px;
+    --border-radius: 12px;
+    --h2-margin: 25px;
+    --form-group-margin: 18px;
+    --input-padding-y: 14px;
+    --input-padding-x: 16px;
+    --input-font-size: 16px;
+    --button-padding-y: 18px;
+    --button-padding-x: 24px;
+    --button-font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
+  
+  :root {
+    --border-radius: 10px;
+    --h2-margin: 20px;
+    --form-group-margin: 16px;
+    --label-margin: 6px;
+    --label-font-size: 15px;
+    --input-padding-y: 12px;
+    --input-padding-x: 14px;
+    --textarea-min-height: 100px;
+    --button-padding-y: 16px;
+    --button-padding-x: 20px;
+    --button-font-size: 16px;
+    --button-min-height: 50px;
+  }
+}
+
+@media (max-width: 360px) {
+  body {
+    padding: 10px;
+  }
+  
+  :root {
+    --container-padding: 20px;
+    --input-padding-y: 10px;
+    --input-padding-x: 12px;
+    --button-padding-y: 14px;
+    --button-padding-x: 16px;
+    --button-min-height: 48px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  textarea,
+  input[type="file"] {
+    border-width: 3px;
+  }
+
+  button {
+    border: 2px solid #003366;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    display: block !important;
+  }
+
+  .container {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    max-width: none;
+    width: 100%;
+  }
+
+  button {
+    display: none;
+  }
+}
