@@ -1,0 +1,30 @@
+.login-bg {
+  height: 100vh;
+  background: linear-gradient(135deg, #6a5acd, #7b68ee);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background: white;
+  padding: 30px;
+  width: 360px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 10px;
+  background: #6a5acd;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}

@@ -1,0 +1,76 @@
+.auth-card {
+  font-family: "Inter", sans-serif;
+  
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.btn-main {
+  position: relative;
+  z-index: 10;
+}
+.form-card.auth-card {
+  width: 380px;
+  padding: 32px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+/* Page centering helper for Login/Welcome pages */
+.welcome-page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  padding: 20px;
+  background-image: url("https://img.freepik.com/free-vector/insurance-services-concept-abstract-3d-sphere-globe-with-icons-hand_127544-1099.jpg?semt=ais_hybrid&w=740&q=80");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.welcome-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  z-index: 0;
+}
+
+.form-card.auth-card {
+  position: relative;
+  z-index: 10;
+}
+.bottom-text {
+  text-align: center;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.bottom-text a,
+.bottom-text a:link,
+.bottom-text a:visited {
+  color: var(--primary-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bottom-text a:hover {
+  text-decoration: underline;
+}

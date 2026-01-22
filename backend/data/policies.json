@@ -1,0 +1,22 @@
+{
+  "Health": [
+    { "name": "Health Secure", "rating": 4.4, "coverage": "₹5,00,000", "premium": "₹4,000", "deductible": "₹1,000" },
+    { "name": "Health Plus", "rating": 4.6, "coverage": "₹10,00,000", "premium": "₹6,500", "deductible": "₹2,000" },
+    { "name": "Health Max", "rating": 4.8, "coverage": "₹15,00,000", "premium": "₹9,000", "deductible": "₹3,000" }
+  ],
+  "Auto": [
+    { "name": "Auto Secure", "rating": 4.3, "coverage": "₹3,00,000", "premium": "₹2,500", "deductible": "₹1,500" },
+    { "name": "Auto Plus", "rating": 4.5, "coverage": "₹5,00,000", "premium": "₹3,800", "deductible": "₹2,000" },
+    { "name": "Auto Max", "rating": 4.7, "coverage": "₹8,00,000", "premium": "₹5,200", "deductible": "₹3,000" }
+  ],
+  "Home": [
+    { "name": "Home Secure", "rating": 4.4, "coverage": "₹15,00,000", "premium": "₹4,000", "deductible": "₹5,000" },
+    { "name": "Home Plus", "rating": 4.6, "coverage": "₹25,00,000", "premium": "₹6,500", "deductible": "₹8,000" },
+    { "name": "Home Max", "rating": 4.8, "coverage": "₹40,00,000", "premium": "₹9,000", "deductible": "₹12,000" }
+  ],
+  "Life": [
+    { "name": "Life Secure", "rating": 4.5, "coverage": "₹25,00,000", "premium": "₹2,200", "deductible": "N/A" },
+    { "name": "Life Plus", "rating": 4.7, "coverage": "₹50,00,000", "premium": "₹3,800", "deductible": "N/A" },
+    { "name": "Life Max", "rating": 4.9, "coverage": "₹1,00,00,000", "premium": "₹6,000", "deductible": "N/A" }
+  ]
+}
