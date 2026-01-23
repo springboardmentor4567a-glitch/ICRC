@@ -1,0 +1,44 @@
+.compare-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.compare-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #0a2e5c;
+}
+
+.selectors {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.selectors select {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.compare-table th {
+  background-color: #f4f6f8;
+  font-weight: 600;
+}
