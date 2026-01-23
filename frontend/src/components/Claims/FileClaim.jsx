@@ -21,7 +21,7 @@ const FileClaim = () => {
   const [pendingPolicyIds, setPendingPolicyIds] = useState(new Set()); 
   
   // UI State
-  const [expandedClaim, setExpandedClaim] = useState(null); // ✅ Track expanded dropdown
+  const [expandedClaim, setExpandedClaim] = useState(null); 
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -132,11 +132,14 @@ const FileClaim = () => {
   };
 
   const loadRejectedClaim = (claim) => {
+      // ✅ Convert stored number amount to string with commas when loading
+      const formattedAmount = claim.amount ? claim.amount.toLocaleString() : '';
+      
       setFormData({
           policyId: claim.policyId,
           policyTitle: claim.policyTitle,
           incidentDate: claim.date, 
-          amount: claim.amount,     
+          amount: formattedAmount,      
           description: claim.description || '', 
           file: null, 
           maxClaimable: claim.maxClaimable,
@@ -151,18 +154,58 @@ const FileClaim = () => {
   };
 
   // --- HANDLERS ---
+  
+  // ✅ NEW HANDLE CHANGE WITH COMMA FORMATTING
   const handleChange = (e) => {
       const { name, value } = e.target;
+      
       if (name === 'amount') {
-          const val = parseFloat(value);
-          if (val > formData.maxClaimable) setAmountError(`Max limit: ₹${formData.maxClaimable.toLocaleString()}`);
-          else setAmountError('');
+          // 1. Strip existing commas to get raw number string
+          const rawValue = value.replace(/,/g, '');
+          
+          // 2. Only allow digits and one decimal point
+          if (rawValue === '' || /^[0-9]*\.?[0-9]*$/.test(rawValue)) {
+              
+              const val = parseFloat(rawValue);
+              
+              // 3. Validation Logic
+              if (!isNaN(val) && val > formData.maxClaimable) {
+                  setAmountError(`Exceeds limit: ₹${formData.maxClaimable.toLocaleString()}`);
+              } else {
+                  setAmountError('');
+              }
+
+              // 4. Format with commas (Integer part only)
+              // This regex adds a comma every 3 digits
+              const parts = rawValue.split('.');
+              parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              const formattedValue = parts.join('.');
+
+              setFormData(prev => ({ ...prev, [name]: formattedValue }));
+          }
+      } 
+      else {
+          setFormData(prev => ({ ...prev, [name]: value }));
       }
-      setFormData(prev => ({ ...prev, [name]: value }));
+      
       if (name === 'policyId') {
           const selected = policies.find(p => p.id === parseInt(value));
           if (selected) selectPolicy(selected);
       }
+  };
+
+  // Helper Functions
+  const getTodayDate = () => new Date().toISOString().split("T")[0];
+  const getMinDate = () => {
+      const d = new Date();
+      d.setDate(d.getDate() - 15);
+      return d.toISOString().split('T')[0];
+  };
+
+  // ✅ Helper to clean amount for submission/logic
+  const getRawAmount = () => {
+      if(!formData.amount) return 0;
+      return parseFloat(formData.amount.replace(/,/g, ''));
   };
 
   const handleNext = () => {
@@ -172,7 +215,23 @@ const FileClaim = () => {
       }
       if (step === 2) {
           if (!formData.incidentDate || !formData.amount || !formData.description) return showToast("All fields are required.", "error");
-          if (parseFloat(formData.amount) > formData.maxClaimable) return showToast("Amount exceeds policy limit.", "error");
+          
+          const selectedDate = new Date(formData.incidentDate);
+          const today = new Date();
+          const minDate = new Date();
+          minDate.setDate(today.getDate() - 15);
+          
+          selectedDate.setHours(0,0,0,0);
+          today.setHours(0,0,0,0);
+          minDate.setHours(0,0,0,0);
+
+          if (selectedDate > today) return showToast("Incident date cannot be in the future.", "error");
+          if (selectedDate < minDate) return showToast("Claims can only be filed for the last 15 days.", "error");
+
+          // Check using raw amount
+          if (getRawAmount() > formData.maxClaimable) {
+             return showToast(`Amount cannot exceed ₹${formData.maxClaimable.toLocaleString()}`, "error");
+          }
       }
       if (step === 3 && !formData.file) return showToast("Proof document is required.", "error");
       setStep(prev => prev + 1);
@@ -198,7 +257,7 @@ const FileClaim = () => {
     setUploading(true);
     const data = new FormData();
     data.append('policy_id', formData.policyId);
-    data.append('claim_amount', formData.amount);
+    data.append('claim_amount', getRawAmount()); // ✅ Send raw number to backend
     data.append('incident_date', formData.incidentDate);
     data.append('description', formData.description);
     data.append('proof_file', formData.file);
@@ -265,7 +324,6 @@ const FileClaim = () => {
                         <button className="btn-link-small" onClick={() => setClaimMode('')}>Change Mode</button>
                     </div>
                 ) : (
-                    // ✅ DROPDOWN / ACCORDION LIST
                     <div className="refile-list-container">
                         <label className="section-label">Select a Claim to Fix</label>
                         {rejectedClaims.length === 0 ? <p className="empty-text">No rejected claims available.</p> : (
@@ -287,7 +345,6 @@ const FileClaim = () => {
                                             <div className="refile-amount">₹{rc.amount.toLocaleString()}</div>
                                         </div>
                                         
-                                        {/* EXPANDED DETAILS */}
                                         <div className="refile-body">
                                             <div className="admin-feedback-box">
                                                 <span className="feedback-label">Admin Feedback:</span>
@@ -320,8 +377,47 @@ const FileClaim = () => {
                     </div>
                 )}
                 <div className="form-grid">
-                    <div className="input-group"><label>Incident Date</label><input type="date" name="incidentDate" value={formData.incidentDate} onChange={handleChange} className="modern-input" max={new Date().toISOString().split("T")[0]} /></div>
-                    <div className="input-group"><label>Amount</label><div className="currency-wrapper"><span className="currency-symbol">₹</span><input type="number" name="amount" value={formData.amount} onChange={handleChange} className={`modern-input has-symbol ${amountError?'input-error':''}`}/></div>{amountError && <span className="error-text">{amountError}</span>}</div>
+                    <div className="input-group">
+                        <label>
+                            Incident Date 
+                            <span style={{fontSize:'0.75rem', fontWeight:'normal', color:'#64748b', marginLeft:'6px'}}>
+                                (Last 15 days only)
+                            </span>
+                        </label>
+                        <input 
+                            type="date" 
+                            name="incidentDate" 
+                            value={formData.incidentDate} 
+                            onChange={handleChange} 
+                            className="modern-input" 
+                            max={getTodayDate()} 
+                            min={getMinDate()}
+                        />
+                    </div>
+                    
+                    {/* ✅ UPDATED INPUT: TYPE TEXT & COMMA SUPPORT */}
+                    <div className="input-group">
+                        <label>Claim Amount</label>
+                        <div className="currency-wrapper">
+                            <span className="currency-symbol">₹</span>
+                            <input 
+                                type="text" 
+                                name="amount" 
+                                value={formData.amount} 
+                                onChange={handleChange} 
+                                placeholder="e.g. 50,000"
+                                className={`modern-input has-symbol ${amountError?'input-error':''}`}
+                                autoComplete="off"
+                            />
+                        </div>
+                        {amountError ? (
+                            <span className="error-text" style={{display:'block', marginTop:'5px'}}>⚠️ {amountError}</span>
+                        ) : (
+                            <span style={{fontSize:'0.8rem', color:'#64748b', marginTop:'5px', display:'block'}}>
+                                Max Available Limit: <strong>₹{formData.maxClaimable.toLocaleString()}</strong>
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="input-group"><label>Description</label><textarea name="description" rows="3" value={formData.description} onChange={handleChange} className="modern-input"></textarea></div>
             </div>
@@ -343,7 +439,8 @@ const FileClaim = () => {
                 <div className="review-card">
                     <div className="review-header-summary">
                         <div><span className="summary-label">CLAIMING FOR</span><div className="summary-title">{formData.policyTitle}</div></div>
-                        <div className="summary-amount">₹{parseInt(formData.amount).toLocaleString()}</div>
+                        {/* ✅ SHOW RAW AMOUNT WITH COMMAS IN PREVIEW */}
+                        <div className="summary-amount">₹{getRawAmount().toLocaleString()}</div>
                     </div>
                     <div className="review-grid">
                         <div className="review-item"><span>Date</span><strong>{formData.incidentDate}</strong></div>
