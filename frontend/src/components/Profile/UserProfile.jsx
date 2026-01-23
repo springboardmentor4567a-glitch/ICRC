@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserDashboard, cancelUserPolicy } from '../../api.js';
 import './UserProfile.css';
@@ -20,6 +20,7 @@ const Icon = {
   Alert: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
   Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
   Info: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+  Bell: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, // ✅ Added Bell Icon
 };
 
 const UserProfile = () => {
@@ -27,10 +28,11 @@ const UserProfile = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('policies');
-  
+  const [isNotificationsRead, setIsNotificationsRead] = useState(false); // ✅ Added State for Read Status
+
   // --- MODAL STATES ---
   const [trackingClaim, setTrackingClaim] = useState(null);
-  const [cancelModal, setCancelModal] = useState(null); // { policy, type: 'warning' | 'danger' }
+  const [cancelModal, setCancelModal] = useState(null); 
   const [renewModal, setRenewModal] = useState(null);
   const [detailsModal, setDetailsModal] = useState(null);
   const [isRenewing, setIsRenewing] = useState(false);
@@ -50,7 +52,6 @@ const UserProfile = () => {
         const dashboardRes = await getUserDashboard();
         
         // --- SAFEGUARD: MOCK DATA INJECTION ---
-        // Ensure policies have details needed for the new modals
         if(dashboardRes && dashboardRes.policies) {
             dashboardRes.policies = dashboardRes.policies.map(p => ({
                 ...p,
@@ -72,6 +73,59 @@ const UserProfile = () => {
   }, [navigate]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // --- ✅ DYNAMIC NOTIFICATION GENERATOR ---
+  const notifications = useMemo(() => {
+    if (!data) return [];
+    const list = [];
+    
+    // 1. Policy Purchases
+    (data.policies || []).forEach(p => {
+        list.push({
+            id: `p-${p.id}`,
+            type: 'purchase',
+            title: 'Policy Purchased',
+            message: `Congratulations! Your ${p.title} is now active.`,
+            date: p.start_date,
+            icon: 'Shield',
+            color: 'var(--primary)'
+        });
+    });
+
+    // 2. Claims Updates
+    (data.recent_claims || []).forEach(c => {
+        let title = 'Claim Update';
+        let msg = `Update on claim #${c.claim_number}.`;
+        let color = 'var(--text-muted)';
+        
+        if (c.status === 'Submitted') {
+            title = 'Claim Filed Successfully';
+            msg = `We received your claim for ${c.policy}. Review in progress.`;
+            color = 'var(--primary)';
+        } else if (c.status === 'Approved') {
+            title = 'Claim Accepted';
+            msg = `Great news! Your claim for ${c.policy} has been approved.`;
+            color = 'var(--success)';
+        } else if (c.status === 'Rejected') {
+            title = 'Claim Rejected';
+            msg = `Update regarding your claim #${c.claim_number}. Please check details.`;
+            color = 'var(--danger)';
+        }
+
+        list.push({
+            id: `c-${c.claim_number}-${c.status}`,
+            type: 'claim',
+            title: title,
+            message: msg,
+            date: c.date,
+            icon: 'FileText',
+            color: color
+        });
+    });
+
+    // Sort by date (mocking date objects for sorting)
+    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [data]);
 
   // Actions
   const generatePDF = (policy) => {
@@ -100,16 +154,13 @@ const UserProfile = () => {
 
   // --- SMART CANCEL LOGIC ---
   const initiateCancel = (policy) => {
-    // Check for active claims related to this policy (Submitted or Under Review)
     const activeClaim = data.recent_claims?.find(
         c => c.policy === policy.title && ['Submitted', 'Under Review'].includes(c.status)
     );
 
     if (activeClaim) {
-        // RED WARNING: Active claim exists
         setCancelModal({ policy, type: 'danger', activeClaimId: activeClaim.claim_number });
     } else {
-        // YELLOW WARNING: No active claim, standard cancel
         setCancelModal({ policy, type: 'warning' });
     }
   };
@@ -140,10 +191,7 @@ const UserProfile = () => {
 
   const totalCoverage = (data.policies || []).reduce((sum, p) => sum + (p.coverage_amount || 0), 0);
   const hasRiskProfile = data.user.riskScore && data.user.riskScore > 0;
-  const riskScore = data.user.riskScore || 20; 
-  const riskColor = hasRiskProfile ? 'var(--success)' : 'var(--warning)';
-  const riskGrad = hasRiskProfile ? 'var(--grad-success)' : 'var(--grad-warning)';
-
+  
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -203,6 +251,18 @@ const UserProfile = () => {
             </button>
             <button onClick={() => setActiveTab('claims')} className={`tab-btn ${activeTab === 'claims' ? 'active' : ''}`}>
               <Icon.FileText /> Claims
+            </button>
+            {/* ✅ NOTIFICATIONS TAB BUTTON WITH SMART BADGE */}
+            <button 
+                onClick={() => { setActiveTab('notifications'); setIsNotificationsRead(true); }} // ✅ Hides badge on click
+                className={`tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
+            >
+              <Icon.Bell /> Notifications 
+              {notifications.length > 0 && !isNotificationsRead && ( // ✅ Only shows if NOT read
+                  <span className="badge" style={{marginLeft:'6px', fontSize:'0.7rem', padding:'2px 6px', borderRadius:'10px', background:'var(--danger)', color:'white'}}>
+                      {notifications.length}
+                  </span>
+              )}
             </button>
             <button onClick={() => setActiveTab('recommendations')} className={`tab-btn ${activeTab === 'recommendations' ? 'active' : ''}`}>
               <Icon.Star /> For You
@@ -284,6 +344,40 @@ const UserProfile = () => {
               ))}
             </div>
           )}
+
+          {/* ✅ NOTIFICATIONS TAB CONTENT */}
+          {activeTab === 'notifications' && (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+               {notifications.length === 0 ? (
+                  <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize:'2rem', marginBottom:'1rem', opacity:0.5 }}>🔕</div>
+                      <h3>No new notifications</h3>
+                      <p>You are all caught up!</p>
+                  </div>
+               ) : (
+                  notifications.map((note) => (
+                    <div key={note.id} className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'start', gap: '1rem' }}>
+                       <div style={{ 
+                           width: '40px', height: '40px', borderRadius: '50%', 
+                           background: note.color === 'var(--success)' ? '#dcfce7' : note.color === 'var(--danger)' ? '#fee2e2' : '#e0f2fe',
+                           color: note.color, 
+                           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                       }}>
+                           {note.icon === 'Shield' && <Icon.Shield />}
+                           {note.icon === 'FileText' && <Icon.FileText />}
+                       </div>
+                       <div style={{ flex: 1 }}>
+                           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'0.25rem' }}>
+                               <h4 style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-main)' }}>{note.title}</h4>
+                               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{note.date}</span>
+                           </div>
+                           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight:'1.4' }}>{note.message}</p>
+                       </div>
+                    </div>
+                  ))
+               )}
+             </div>
+          )}
           
           {/* RECOMMENDATIONS TAB */}
           {activeTab === 'recommendations' && (
@@ -313,7 +407,6 @@ const UserProfile = () => {
       </div>
 
       {/* --- MODALS --- */}
-
       {/* 1. TRACKING MODAL */}
       {trackingClaim && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setTrackingClaim(null)}>
@@ -415,12 +508,10 @@ const UserProfile = () => {
                     <div style={{ background:'var(--bg-app)', padding:'1rem', borderRadius:'0.5rem', marginBottom:'1.5rem', display:'flex', justifyContent:'space-between' }}>
                          <div>
                             <p style={{ fontSize:'0.75rem' }}>Annual Premium</p>
-                            {/* FIX APPLIED HERE: Added ( ... || 0) */}
                             <p style={{ fontSize:'1.25rem', fontWeight:'bold' }}>₹{(detailsModal.premium_amount || 0).toLocaleString()}</p>
                          </div>
                          <div style={{ textAlign:'right' }}>
                             <p style={{ fontSize:'0.75rem' }}>Coverage Amount</p>
-                            {/* FIX APPLIED HERE: Added ( ... || 0) */}
                             <p style={{ fontSize:'1.25rem', fontWeight:'bold', color:'var(--success)' }}>₹{((detailsModal.coverage_amount || 0)/100000).toFixed(1)} Lakhs</p>
                          </div>
                     </div>
