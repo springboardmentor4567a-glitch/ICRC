@@ -3,15 +3,22 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-// Routes
-const claimRoutes = require("./routes/claimRoutes"); // Make sure path is correct
+// =====================
+// ROUTES
+// =====================
+const claimRoutes = require("./routes/claimRoutes");
+const adminAuthRoutes = require("./routes/adminAuth"); // ✅ ADD THIS
 
 const app = express();
 
 // =====================
 // MIDDLEWARE
 // =====================
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "http://localhost:3001"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // =====================
@@ -24,8 +31,13 @@ mongoose.connect(process.env.MONGO_URI)
 // =====================
 // ROUTES
 // =====================
-// Use claim routes for admin panel
-// Admin panel will fetch all claims and update status
+
+// 🔐 Admin authentication routes
+// login → /api/admin/login
+// register → /api/admin/register
+app.use("/api/admin", adminAuthRoutes); // ✅ ADD THIS
+
+// 📄 Claim management routes
 app.use("/api/claims", claimRoutes);
 
 // Health check

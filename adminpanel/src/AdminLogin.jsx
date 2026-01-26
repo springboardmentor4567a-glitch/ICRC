@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./auth.css";
 
 function AdminLogin() {
@@ -7,15 +8,23 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // STATIC ADMIN CREDENTIALS
-    if (email === "admin@gmail.com" && password === "admin123") {
-      localStorage.setItem("adminAuth", "true");
+    try {
+      const res = await axios.post("http://localhost:5001/api/admin/login", {
+        email,
+        password
+      });
+
+      // Store JWT token or a simple auth flag
+      localStorage.setItem("adminAuth", res.data.token); // or true if you don’t use JWT yet
+      localStorage.setItem("adminEmail", email); // store admin username/email for dashboard display
+
       navigate("/dashboard");
-    } else {
-      alert("Invalid Admin Credentials");
+    } catch (err) {
+      console.error("Login failed:", err);
+      alert(err.response?.data?.message || "Admin login failed");
     }
   };
 
@@ -25,10 +34,22 @@ function AdminLogin() {
         <h2>Admin Panel</h2>
         <p>Insurance Management System</p>
 
-        <input placeholder="Email Address" onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+        <input
+          type="email"
+          placeholder="Email Address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <button>Login to Admin Panel</button>
+        <button type="submit">Login to Admin Panel</button>
       </form>
     </div>
   );

@@ -8,4 +8,4 @@ const admins = [
   }
 ];
 
-module.exports = admins;
+module.exports = admins; 
