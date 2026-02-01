@@ -32,7 +32,7 @@ export default function Header() {
       {/* LEFT */}
       <div className="header-left">
         <div className="logo" onClick={() => navigate("/dashboard")}>
-          ICRC
+          ⚡ICRC
         </div>
 
         {showBack && (

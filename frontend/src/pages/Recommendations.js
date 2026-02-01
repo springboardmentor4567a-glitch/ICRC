@@ -188,6 +188,7 @@ const riskBadge = getRiskBadge(risk);
             cursor:"pointer",
     
           }}
+          onClick={() => navigate(`/policy/${best.id}`)}
         >
           Select Plan
         </button>
@@ -253,6 +254,7 @@ const riskBadge = getRiskBadge(risk);
                     borderRadius: "6px",
                     cursor: "default",
                   }}
+                  onClick={() => navigate(`/policy/${p.id}`)}
                 >
                   View details
                 </button>

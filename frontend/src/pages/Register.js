@@ -36,13 +36,12 @@ export default function Register() {
       }
 
       setSuccess(
-  <span style={{ color: "#058333", fontWeight: "600" }}>
-    Registration Successful ✔ Redirecting...
-  </span>
-);
+        <span style={{ color: "#058333", fontWeight: "600" }}>
+          Registration Successful ✔ Redirecting...
+        </span>
+      );
 
       setTimeout(() => navigate("/login"), 1500);
-
     } catch {
       setError("⚠ Backend Server Not Reachable");
     }
@@ -50,47 +49,86 @@ export default function Register() {
 
   return (
     <>
-      {/* Heading */}
-      <h1 style={{
-        textAlign:"center",
-        marginTop:"40px",
-        marginBottom:"20px",
-        fontSize:"32px",
-        fontWeight:"bold",
-        color:"black",
-      }}>
-        Insurance Comparison, Recommendation & Claim Assistant
-      </h1>
+      {/* Gradient Heading */}
 
       <div className="center-box">
+        <h1
+  style={{
+    textAlign: "center",
+    marginBottom: "20px",
+    fontSize: "40px",
+    fontWeight: "bold",
+    maxWidth: "600px",
+    marginInline: "auto",
+    background: "linear-gradient(90deg, #d31e6f, #9622ef)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}
+>
+  Insurance Comparison, Recommendation & Claim Assistant
+</h1>
+
         <form onSubmit={submit} className="form-card">
-          <h2 style={{marginBottom:"10px",color:"black"}}>Create Account</h2>
+          <h2 style={{ marginBottom: "10px", color: "black" }}>
+            Create Account
+          </h2>
 
           {error && <p className="msg-error">{error}</p>}
           {success && <p className="msg-success">{success}</p>}
 
-          <input className="input-box" type="text" placeholder="Full Name"
-            value={full_name} onChange={(e)=>setFullName(e.target.value)} required />
+          <input
+            className="input-box"
+            type="text"
+            placeholder="Full Name"
+            value={full_name}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
 
-          <input className="input-box" type="email" placeholder="Email"
-            value={email} onChange={(e)=>setEmail(e.target.value)} required />
+          <input
+            className="input-box"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <input className="input-box" type="text" placeholder="Phone"
-            value={phone} onChange={(e)=>setPhone(e.target.value)} />
+          <input
+            className="input-box"
+            type="text"
+            placeholder="Phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
 
-          <input className="input-box" type="password" placeholder="Password"
-            value={password} onChange={(e)=>setPassword(e.target.value)} required />
+          <input
+            className="input-box"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-          <input className="input-box" type="password" placeholder="Confirm Password"
-            value={confirm} onChange={(e)=>setConfirm(e.target.value)} required />
+          <input
+            className="input-box"
+            type="password"
+            placeholder="Confirm Password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+          />
 
           <div className="form-actions">
             <button className="btn-purple">Create Account</button>
-            </div>
+          </div>
 
-
-          <p style={{marginTop:"12px",color:"black"}}>
-            Already have an account? <a href="/login" style={{color:"black",fontWeight: "600"}}>Login</a>
+          <p style={{ marginTop: "12px", color: "black" }}>
+            Already have an account?{" "}
+            <a href="/login" style={{ color: "black", fontWeight: "600" }}>
+              Login
+            </a>
           </p>
         </form>
       </div>

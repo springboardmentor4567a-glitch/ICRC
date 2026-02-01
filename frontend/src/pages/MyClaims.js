@@ -41,16 +41,30 @@ export default function MyClaims() {
 
       {/* CLAIM LIST */}
       {claims.map((c) => (
-        <div key={c.id} className="card claim-item">
-          <p><b>Claim ID:</b> {c.id}</p>
-          <p><b>Policy:</b> {c.policy_number}</p>
-          <p><b>Amount:</b> ₹{c.amount}</p>
+  <div key={c.id} className={`claim-card ${c.status}`}>
+    
+    {/* Left status bar */}
+    <div className="claim-bar"></div>
 
-          <span className={`status ${c.status}`}>
-            {c.status.replace("_", " ")}
-          </span>
-        </div>
-      ))}
+    <div className="claim-content">
+      <div className="claim-top">
+        <h4>Claim #{c.id}</h4>
+        <span className={`status ${c.status}`}>
+          {c.status.replace("_", " ")}
+        </span>
+      </div>
+
+      <p className="claim-policy">
+        <b>Policy:</b> {c.policy_number}
+      </p>
+
+      <p className="claim-amount">
+        ₹{c.amount}
+      </p>
+    </div>
+  </div>
+))}
+
     </div>
   );
 }

@@ -34,20 +34,25 @@ export default function Login() {
   return (
     <>
       {/* Heading */}
-      <h1
-        style={{
-          textAlign: "center",
-          marginTop: "40px",
-          marginBottom: "20px",
-          fontSize: "32px",
-          fontWeight: "bold",
-          color: "black",
-        }}
-      >
-        Insurance Comparison, Recommendation & Claim Assistant
-      </h1>
+
 
       <div className="center-box">
+         <h1
+  style={{
+    textAlign: "center",
+    marginBottom: "20px",
+    fontSize: "40px",
+    fontWeight: "bold",
+    maxWidth: "600px",
+    marginInline: "auto",
+    background: "linear-gradient(90deg, #d31e6f, #9622ef)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}
+>
+  Insurance Comparison, Recommendation & Claim Assistant
+</h1>
+
         <form onSubmit={submit} className="form-card">
           <h2>Login </h2>
 

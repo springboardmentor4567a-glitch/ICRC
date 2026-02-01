@@ -105,11 +105,12 @@ export default function ComparePolicies() {
           </tbody>
           <div style={{ marginTop: 24, textAlign: "center" }}>
   <button
-    className="btn-outline" 
-    onClick={() => navigate("/plans")}
-  >
-    ← Back to Plans
-  </button>
+  className="btn-outline"
+  onClick={() => navigate("/plans", { replace: true })}
+>
+  ← Back to Plans
+</button>
+
 </div>
 
         </table>

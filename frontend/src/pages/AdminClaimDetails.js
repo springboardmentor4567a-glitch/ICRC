@@ -98,7 +98,13 @@ export default function AdminClaimDetails() {
         <h3 className="section-title">📁 Uploaded Documents</h3>
 
         {documents.length === 0 ? (
-          <p>No documents uploaded</p>
+          <p style={{
+    backgroundColor: "#fee2e2",   // light red
+    color: "#991b1b",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    display: "inline-block",
+  }}>No documents uploaded</p>
         ) : (
           documents.map((doc) => (
             <div key={doc.id} className="document-row">
