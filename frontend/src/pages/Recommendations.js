@@ -2,14 +2,22 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { calculateRiskProfile } from "../utils/riskProfile";
 
+function currency(value) {
+  if (value === null || value === undefined) return "-";
+  return "?" + Number(value).toLocaleString();
+}
+
+function matchPercent(score) {
+  return Math.min(95, 65 + score * 5);
+}
+
 export default function Recommendations() {
   const navigate = useNavigate();
-
   const [profile, setProfile] = useState(null);
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const risk = profile ? calculateRiskProfile(profile) : "";
-  /* ---------------- FETCH PROFILE + POLICIES ---------------- */
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -18,10 +26,7 @@ export default function Recommendations() {
     }
 
     Promise.all([
-      fetch("http://127.0.0.1:8000/users/me/preferences", {
-        headers: { token },
-      }).then((r) => r.json()),
-
+      fetch("http://127.0.0.1:8000/users/me/preferences", { headers: { token } }).then((r) => r.json()),
       fetch("http://127.0.0.1:8000/policies").then((r) => r.json()),
     ])
       .then(([profileData, policiesData]) => {
@@ -32,236 +37,83 @@ export default function Recommendations() {
       .catch(() => setLoading(false));
   }, [navigate]);
 
-  /* ---------------- LOADING ---------------- */
-  if (loading) {
-    return (
-      <p style={{ color: "white", textAlign: "center", marginTop: "40px" }}>
-        Loading recommendations...
-      </p>
-    );
-  }
+  if (loading) return <p className="loading-state">Loading recommendations...</p>;
+  if (!profile || policies.length === 0) return <p className="loading-state">No suitable policies found.</p>;
 
-  /* ---------------- SAFETY CHECK ---------------- */
-  if (!profile || policies.length === 0) {
-    return (
-      <p style={{ color: "white", textAlign: "center", marginTop: "40px" }}>
-        No suitable policies found.
-      </p>
-    );
-  }
+  const categoryMap = { health: "health", life: "life" };
+  const userCategory = categoryMap[(profile.policy_type || "").toLowerCase()];
 
-  /* ---------------- CATEGORY MAPPING ---------------- */
-  const categoryMap = {
-    health: "health",
-    life: "life",
-  };
+  const matched = policies
+    .filter((p) => {
+      if (!p.category || !userCategory) return false;
+      return p.category.toLowerCase() === userCategory;
+    })
+    .map((p) => {
+      let score = 0;
+      if (profile.age <= 30) score += 2;
+      if (!profile.smoker) score += 2;
+      if (!profile.pre_existing_conditions) score += 1;
+      if (risk === "Low Risk" && p.premium <= 10000) score += 3;
+      if (risk === "Medium Risk" && p.premium <= 14000) score += 3;
+      if (risk === "High Risk" && p.coverage?.includes("10")) score += 3;
+      return { ...p, score };
+    })
+    .sort((a, b) => b.score - a.score);
 
-  const userCategory = categoryMap[
-  (profile.policy_type || "").toLowerCase()
-];
-
-
-  /* ---------------- RECOMMENDATION LOGIC ---------------- */
- const matched = policies
-  .filter((p) => {
-    if (!p.category || !userCategory) return false;
-    return p.category.toLowerCase() === userCategory;
-  })
-  .map((p) => {
-    let score = 0;
-
-    // -------- BASIC MATCHING --------
-    if (profile.age <= 30) score += 2;
-    if (!profile.smoker) score += 2;
-    if (!profile.pre_existing_conditions) score += 1;
-
-    // -------- RISK-BASED LOGIC --------
-    if (risk === "Low Risk" && p.premium <= 10000) score += 3;
-
-    if (risk === "Medium Risk" && p.premium <= 14000) score += 3;
-
-    if (risk === "High Risk" && p.coverage?.includes("10")) score += 3;
-
-    return { ...p, score };
-  })
-  .sort((a, b) => b.score - a.score);
-
-
-  if (matched.length === 0) {
-    return (
-      <p style={{ color: "black", textAlign: "center", marginTop: "40px" }}>
-        No suitable policies found.
-      </p>
-    );
-  }
+  if (matched.length === 0) return <p className="loading-state">No suitable policies found.</p>;
 
   const best = matched[0];
-  const others = matched.slice(1, 6); // ✅ 5 other plans
-  
-  const getRiskBadge = (risk) => {
-  if (risk === "Low Risk") return { text: "LOW RISK", color: "#22c55e" };
-  if (risk === "Medium Risk") return { text: "MEDIUM RISK", color: "#facc15" };
-  return { text: "HIGH RISK", color: "#ef4444" };
-};
+  const others = matched.slice(1, 6);
 
-const riskBadge = getRiskBadge(risk);
-
-
-  /* ---------------- UI ---------------- */
   return (
-    <div style={{ color: "#1f2937", paddingTop: "40px", textAlign: "center" }}>
-      <h1 style={{ color: "#6f06c6" }}>🎯 Recommended for You</h1>
-      <p>Based on your profile</p>
-
-      {/* ---- RISK BADGE ---- */}
-<div
-  style={{
-    display: "inline-block",
-    marginBottom: "20px",
-    padding: "6px 14px",
-    borderRadius: "20px",
-    fontWeight: "bold",
-    background:
-      risk === "High Risk"
-        ? "#dc2626"
-        : risk === "Medium Risk"
-        ? "#facc15"
-        : "#16a34a",
-    color: "black",
-  }}
->
-  {risk}
-</div>
-
-
-      {/* ---------- BEST MATCH ---------- */}
-      <div
-  style={{
-    width: "500px",
-    margin: "10px auto",
-    background: "linear-gradient(135deg, rgba(241, 242, 248, 0.95), rgba(255, 255, 255, 0.9))",
-    padding: "20px",
-    borderRadius: "20px",
-    border: "1.5px solid #65507b",
-    boxShadow: "0 20px 40px rgba(82, 52, 134, 0.42)",
-    textAlign: "left",
-    transition: "all 0.25s ease",
-  }}
->
-
-        <p style={{ color: "#90922f", fontWeight: "900" }}>⭐ BEST MATCH</p>
-        <span
-  style={{
-  
-    padding: "4px 10px",
-    background: riskBadge.color,
-    color: "#000",
-    borderRadius: "20px",
-    fontSize: "15px",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  }}
->
-  {riskBadge.text}
-</span>
-
-        <h2>{best.name}</h2>
-        <p style={{ color: "rgb(70, 211, 57)",fontSize: "20px",fontWeight:"bold" }}>₹{best.premium} / year</p>
-        <p>{best.benefits || "Comprehensive coverage"}</p>
-
-        <p style={{ fontSize: "16px", marginTop: "10px" }}>
-          📌 Why? Age {profile.age},{" "}
-          {profile.smoker ? "smoker" : "non-smoker"},{" "}
-          {profile.annual_income} income
-        </p>
-
-        {/* UI only – no action */}
-        <button
-          style={{
-            marginTop: "15px",
-            width: "100%",
-            padding: "12px",
-            background: " linear-gradient(90deg, #6c63ff, #c77dff)",
-            color: "black",
-            border: "none",
-            borderRadius: "10px",
-            cursor:"pointer",
-    
-          }}
-          onClick={() => navigate(`/policy/${best.id}`)}
-        >
-          Select Plan
-        </button>
+    <div className="recommendation-page page-container">
+      <div className="page-header-block">
+        <span className="section-kicker">Policy Recommendations</span>
+        <h2 className="page-title">Recommended for You</h2>
+        <p className="page-desc">Based on your preferences, risk profile and selected insurance category.</p>
       </div>
-      {/* ---------- UPDATE PROFILE (LAST) ---------- */}
-      <p
-        style={{
-          color: "#1f2937",
-          marginTop: "50px",
-          cursor: "pointer",
-          fontWeight:"bold"
-        }}
-        onClick={() => navigate("/preferences")}
-      >
-       Not right? 💡 Update your profile
-      </p>
 
-      {/* ---------- OTHER PLANS ---------- */}
+      <section className="recommendation-summary">
+        <div>
+          <span className="reco-score">{matchPercent(best.score)}% Match</span>
+          <h3>{best.name}</h3>
+          <p>{best.benefits || "Comprehensive coverage for your profile."}</p>
+        </div>
+        <div className="reco-price">
+          <span>Annual Premium</span>
+          <strong>{currency(best.premium)}</strong>
+          <button className="btn-purple" onClick={() => navigate(`/policy/${best.id}`)}>View Plan</button>
+        </div>
+      </section>
+
+      <div className="reco-badge-row">
+        <span className="reco-badge success">Recommended</span>
+        <span className="reco-badge warning">Budget Friendly</span>
+        <span className="reco-badge">Family Friendly</span>
+        <span className="reco-badge success">Best Value</span>
+        <span className="reco-badge">{risk}</span>
+      </div>
+
+      <button className="btn-outline update-profile-btn" onClick={() => navigate("/preferences")}>Update Preferences</button>
+
       {others.length > 0 && (
-        <>
-          <h3 style={{ marginTop: "40px", color: "#a014e7" }}>
-            Other suitable plans
-          </h3>
-
-          <div
-            style={{
-              display:'flex',
-              justifyContent: "center",
-              gap: "30px",
-              marginTop: "10px",
-              flexWrap: "wrap",
-            }}
-          >
-            {others.map((p) => (
-              <div
-                key={p.id}
-                style={{
-                  width: "260px",
-                  background: "linear-gradient(135deg, #f8f0ff, #ffffff)",
-                  border: "1px solid #e9d5ff",
-                  transition: "all 0.25s ease",
-
-                  padding: "20px",
-                  borderRadius: "12px",
-                  boxShadow: "0 0 10px #bb7ae9ff",
-                  textAlign: "left",
-                }}
-              >
-                <h4>{p.name}</h4>
-                <p style={{ color: "rgb(70, 243, 54)" }}>
-                  ₹{p.premium} / year
-                </p>
-
-                {/* UI only */}
-                <button
-                  style={{
-                    marginTop: "10px",
-                    width: "100%",
-                    padding: "8px",
-                    background: " linear-gradient(90deg, #6c63ff, #c77dff)",
-                    color: "#121113ff",
-                    border: "1px solid #c77dff",
-                    borderRadius: "6px",
-                    cursor: "default",
-                  }}
-                  onClick={() => navigate(`/policy/${p.id}`)}
-                >
-                  View details
-                </button>
-              </div>
+        <section className="other-recommendations">
+          <h3>Other Suitable Plans</h3>
+          <div className="reco-grid">
+            {others.map((policy) => (
+              <article className="reco-card" key={policy.id}>
+                <div className="reco-card-head">
+                  <span className="reco-score small">{matchPercent(policy.score)}% Match</span>
+                  <span className="policy-badge">{policy.category}</span>
+                </div>
+                <h4>{policy.name}</h4>
+                <p>{policy.benefits || "Suitable policy option based on your saved profile."}</p>
+                <strong>{currency(policy.premium)} / year</strong>
+                <button className="btn-outline full" onClick={() => navigate(`/policy/${policy.id}`)}>View Details</button>
+              </article>
             ))}
           </div>
-        </>
+        </section>
       )}
     </div>
   );

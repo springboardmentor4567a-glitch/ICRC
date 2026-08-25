@@ -18,6 +18,7 @@ import database
 import models
 import schemas
 from database import SessionLocal
+import chat_service
 
 load_dotenv()
 
@@ -217,10 +218,68 @@ def get_policy(policy_id: int, db: Session = Depends(get_db)):
     if not p:
         raise HTTPException(status_code=404, detail="Policy not found")
     return p
+
+
+# Submit a plan application (Buy Plan demo flow)
+@app.post("/applications", response_model=schemas.PolicyApplicationOut)
+def create_application(
+    payload: schemas.PolicyApplicationCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    policy = db.query(models.Policy).filter(models.Policy.id == payload.policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    application = models.PolicyApplication(
+        user_id=current_user.id,
+        policy_id=payload.policy_id,
+        applicant_name=payload.applicant_name,
+        phone=payload.phone,
+        status="pending",
+    )
+    db.add(application)
+    db.commit()
+    db.refresh(application)
+    return application
+
+
 @app.get("/users/me")
 def get_logged_in_user(
     current_user: models.User = Depends(get_current_user)
 ):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "name": current_user.full_name,
+        "phone": current_user.phone,
+    }
+
+@app.put("/users/me")
+def update_user_profile(
+    user_update: schemas.UserUpdateFull,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    current_user.full_name = user_update.full_name
+    current_user.phone = user_update.phone
+    
+    # Initialize risk profile if empty
+    rp = current_user.risk_profile or {}
+    
+    # Update preferences fields
+    rp["age"] = user_update.age
+    rp["gender"] = user_update.gender
+    rp["marital_status"] = user_update.marital_status
+    rp["employment_type"] = user_update.employment_type
+    rp["annual_income"] = user_update.annual_income
+    rp["dependents"] = user_update.dependents
+    rp["smoker"] = user_update.smoker
+    rp["pre_existing_conditions"] = user_update.pre_existing_conditions
+    
+    current_user.risk_profile = rp
+    db.commit()
+    db.refresh(current_user)
     return {
         "id": current_user.id,
         "email": current_user.email,
@@ -295,11 +354,15 @@ Thank you,
 Insurance Claim Assistant Team
 """
 
-    send_email(
-        to_email="srivallipulaparthi24@gmail.com",
-        subject="Claim Submitted Successfully",
-        body=email_body
-    )
+    try:
+        send_email(
+            to_email="srivallipulaparthi24@gmail.com",
+            subject="Claim Submitted Successfully",
+            body=email_body
+        )
+    except Exception as email_err:
+        # Email is best-effort; claim is already saved — do not fail the request
+        print(f"[WARN] Email notification failed (claim still saved): {email_err}")
 
     return {
         "id": new_claim.id,
@@ -443,4 +506,12 @@ def get_claim_documents(
         })
 
     return results
+
+@app.post("/chat")
+def chatbot_interaction(
+    payload: schemas.ChatIn,
+    db: Session = Depends(get_db)
+):
+    resp = chat_service.handle_chat_message(payload.message, db)
+    return {"response": resp}
 

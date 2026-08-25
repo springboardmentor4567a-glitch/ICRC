@@ -23,6 +23,18 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+class UserUpdateFull(BaseModel):
+    full_name: str
+    phone: Optional[str] = None
+    age: int
+    gender: str
+    marital_status: str
+    employment_type: str
+    annual_income: str
+    dependents: int
+    smoker: bool
+    pre_existing_conditions: bool
+
 # Provider / Policy Schemas
 class ProviderOut(BaseModel):
     id: int
@@ -42,6 +54,7 @@ class PolicyOut(BaseModel):
     coverage: Optional[str] = None
     premium: Optional[float] = None
     benefits: Optional[str] = None
+    terms_conditions: Optional[str] = None
     provider: Optional[ProviderOut] = None
     class Config:
         orm_mode = True
@@ -79,3 +92,26 @@ class ClaimOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Policy Application Schemas (Buy Plan demo flow)
+class PolicyApplicationCreate(BaseModel):
+    policy_id: int
+    applicant_name: str
+    phone: Optional[str] = None
+
+
+class PolicyApplicationOut(BaseModel):
+    id: int
+    user_id: int
+    policy_id: int
+    applicant_name: str
+    phone: Optional[str] = None
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ChatIn(BaseModel):
+    message: str

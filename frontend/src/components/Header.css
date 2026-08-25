@@ -1,128 +1,107 @@
-/* ================= HEADER ================= */
-
 .app-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  padding: 0 30px;
-
-  background: linear-gradient(90deg, #6c63ff, #c77dff);
-
+  inset: 0 0 auto 0;
+  z-index: 1000;
+  height: var(--header-height);
+  padding: 0 clamp(16px, 4vw, 40px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  z-index: 1000;
+  gap: 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
-/* ---------- LEFT ---------- */
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo {
-  color: white;
-  font-weight: 800;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* Optional Back Button */
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  background: linear-gradient(135deg, #ffffff, #f1eaff);
-  color: #6c63ff;
-
-  border: none;
-  padding: 6px 14px;
-  border-radius: 999px;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.35);
-  transition: all 0.25s ease;
-}
-
-.back-btn:hover {
-  transform: translateX(-4px);
-  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-  box-shadow: 0 10px 22px rgba(108, 99, 255, 0.5);
-}
-
-/* ---------- RIGHT ---------- */
-
+.header-left,
 .header-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* ---------- COMMON BUTTON ---------- */
-
-.header-btn {
-  display: flex;
+.logo {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-
-  padding: 7px 14px;
-  border-radius: 999px;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  border: none;
+  gap: 10px;
+  color: var(--color-text);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   cursor: pointer;
-
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
 }
 
-/* ---------- ADMIN BUTTON ---------- */
-
-.header-btn.admin {
-  background: linear-gradient(135deg, #ffffff, #f3e8ff);
-  color: #6c63ff;
+.logo::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: var(--shadow-sm);
 }
 
-.header-btn.admin:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(108, 99, 255, 0.5);
+.back-btn,
+.header-btn {
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
-/* ---------- PROFILE BUTTON ---------- */
-
+.back-btn,
+.header-btn.admin,
 .header-btn.profile {
-  background: rgba(255, 255, 255, 0.9);
-  color: #4b0082;
+  background: #ffffff;
+  color: var(--color-text);
 }
 
+.back-btn:hover,
+.header-btn.admin:hover,
 .header-btn.profile:hover {
-  background: white;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-sm);
 }
-
-/* ---------- LOGOUT BUTTON ---------- */
 
 .header-btn.logout {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: white;
+  background: var(--color-danger);
+  color: #ffffff;
+  border-color: var(--color-danger);
 }
 
 .header-btn.logout:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.6);
+  transform: translateY(-1px);
+  background: #b91c1c;
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.18);
 }
 
-.header-btn.logout:active {
-  transform: scale(0.95);
+.header-btn:active,
+.back-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    height: auto;
+    min-height: var(--header-height);
+    padding: 12px 16px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-left,
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .header-right {
+    justify-content: flex-start;
+  }
 }

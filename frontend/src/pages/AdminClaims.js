@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./AdminClaims.css";
 
 const AdminClaims = () => {
   const [claims, setClaims] = useState([]);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusFilter = searchParams.get("status");
 
   useEffect(() => {
     axios
@@ -18,9 +20,34 @@ const AdminClaims = () => {
       .catch((err) => console.error(err));
   }, []);
 
+  const displayedClaims = statusFilter === "pending"
+    ? claims.filter((c) => c.status === "pending" || c.status === "submitted")
+    : claims;
+
   return (
     <div className="admin-page">
-      <h2 className="admin-title">📋 Claims Management</h2>
+      <h2 className="admin-title">
+        📋 Claims Management {statusFilter && `(${statusFilter.toUpperCase()} ONLY)`}
+      </h2>
+
+      {statusFilter && (
+        <button 
+          onClick={() => setSearchParams({})} 
+          style={{
+            background: "#f1f5f9",
+            border: "1px solid #cbd5e1",
+            borderRadius: "6px",
+            padding: "6px 12px",
+            fontSize: "12px",
+            fontWeight: "700",
+            cursor: "pointer",
+            marginBottom: "16px",
+            color: "#475569"
+          }}
+        >
+          ✕ Clear Filter (Show All)
+        </button>
+      )}
 
       <table className="admin-table">
         <thead>
@@ -34,7 +61,7 @@ const AdminClaims = () => {
         </thead>
 
         <tbody>
-          {claims.map((c) => (
+          {displayedClaims.map((c) => (
             <tr key={c.id}>
               <td>{c.id}</td>
               <td>{c.user_name}</td>

@@ -12,27 +12,26 @@ export default function Header() {
     navigate("/login");
   };
 
-  /* 🔹 Admin routes */
-  const isAdminPage = location.pathname.startsWith("/admin");
+  const isAdminDashboard = location.pathname === "/admin/dashboard";
+  const isUserDashboard = location.pathname === "/dashboard";
 
-  /* 🔹 Back button rules */
-  const showBack =
-    isAdminPage || location.pathname !== "/dashboard";
+  const showBack = role === "admin"
+    ? (location.pathname.startsWith("/admin") && !isAdminDashboard)
+    : (location.pathname !== "/dashboard");
 
   const handleBack = () => {
-    if (location.pathname === "/admin/dashboard") {
-      navigate("/dashboard"); // 👈 admin → user dashboard
+    if (role === "admin") {
+      navigate("/admin/dashboard");
     } else {
-      navigate(-1); // normal back
+      navigate(-1);
     }
   };
 
   return (
     <header className="app-header">
-      {/* LEFT */}
       <div className="header-left">
-        <div className="logo" onClick={() => navigate("/dashboard")}>
-          ⚡ICRC
+        <div className="logo" onClick={() => navigate(role === "admin" ? "/admin/dashboard" : "/dashboard")}>
+          ICRC
         </div>
 
         {showBack && (
@@ -42,15 +41,13 @@ export default function Header() {
         )}
       </div>
 
-      {/* RIGHT */}
       <div className="header-right">
-        {/* ADMIN ONLY */}
         {role === "admin" && (
           <button
             className="header-btn admin"
             onClick={() => navigate("/admin/dashboard")}
           >
-            🧑‍💼 Admin Dashboard
+            Admin Dashboard
           </button>
         )}
 
@@ -58,7 +55,7 @@ export default function Header() {
           className="header-btn profile"
           onClick={() => navigate("/profile")}
         >
-          👤 Profile
+          Profile
         </button>
 
         <button

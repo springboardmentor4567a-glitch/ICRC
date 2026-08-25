@@ -1,12 +1,14 @@
 import Header from "./Header";
+import InsuranceChatbot from "./InsuranceChatbot";
 
 export default function Layout({ children }) {
   return (
     <>
       <Header />
-      <div style={{ paddingTop: "80px" }}>
+      <main className="app-shell">
         {children}
-      </div>
+      </main>
+      <InsuranceChatbot />
     </>
   );
 }

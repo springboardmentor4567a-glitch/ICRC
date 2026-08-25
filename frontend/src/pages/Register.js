@@ -1,5 +1,17 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  Phone,
+  ShieldCheck,
+  User,
+} from "lucide-react";
+import { formatApiError } from "../utils/formatApiError";
 
 export default function Register() {
   const [full_name, setFullName] = useState("");
@@ -9,7 +21,21 @@ export default function Register() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const passwordStrength = useMemo(() => {
+    if (!password) return { label: "Password strength", score: 0 };
+    let score = 0;
+    if (password.length >= 6) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/\d/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    const labels = ["Basic", "Fair", "Good", "Strong"];
+    return { label: labels[Math.max(score - 1, 0)], score };
+  }, [password]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -17,9 +43,11 @@ export default function Register() {
     setSuccess("");
 
     if (password !== confirm) {
-      setError("Passwords do not match ❌");
+      setError("Passwords do not match");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch("http://127.0.0.1:8000/register", {
@@ -31,107 +59,159 @@ export default function Register() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.detail || "Registration Failed ❌");
+        setError(formatApiError(data.detail, "Registration Failed"));
         return;
       }
 
-      setSuccess(
-        <span style={{ color: "#058333", fontWeight: "600" }}>
-          Registration Successful ✔ Redirecting...
-        </span>
-      );
+      setSuccess("Registration Successful - Redirecting...");
 
       setTimeout(() => navigate("/login"), 1500);
     } catch {
-      setError("⚠ Backend Server Not Reachable");
+      setError("Backend Server Not Reachable");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      {/* Gradient Heading */}
+    <section className="auth-portal">
+      <aside className="auth-info-panel">
+        <div className="auth-shield-icon">
+          <ShieldCheck size={34} />
+        </div>
+        <h1>
+          Insurance Comparison,
+          <br /> Recommendation &
+          <br /> Claim Assistant
+        </h1>
+        <p>
+          Compare insurance policies, receive recommendations, calculate
+          premiums, and manage claims securely.
+        </p>
+        <div className="auth-info-note">Smart Insurance Management Platform</div>
+      </aside>
 
-      <div className="center-box">
-        <h1
-  style={{
-    textAlign: "center",
-    marginBottom: "20px",
-    fontSize: "40px",
-    fontWeight: "bold",
-    maxWidth: "600px",
-    marginInline: "auto",
-    background: "linear-gradient(90deg, #d31e6f, #9622ef)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  }}
->
-  Insurance Comparison, Recommendation & Claim Assistant
-</h1>
-
-        <form onSubmit={submit} className="form-card">
-          <h2 style={{ marginBottom: "10px", color: "black" }}>
-            Create Account
-          </h2>
-
-          {error && <p className="msg-error">{error}</p>}
-          {success && <p className="msg-success">{success}</p>}
-
-          <input
-            className="input-box"
-            type="text"
-            placeholder="Full Name"
-            value={full_name}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-
-          <input
-            className="input-box"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <input
-            className="input-box"
-            type="text"
-            placeholder="Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-
-          <input
-            className="input-box"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <input
-            className="input-box"
-            type="password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
-
-          <div className="form-actions">
-            <button className="btn-purple">Create Account</button>
+      <div className="auth-card-panel">
+        <form onSubmit={submit} className="auth-card-clean">
+          <div className="auth-card-heading">
+            <span className="auth-kicker">New user registration</span>
+            <h2>Create Account</h2>
+            <p>Enter your details to create a secure insurance profile.</p>
           </div>
 
-          <p style={{ marginTop: "12px", color: "black" }}>
-            Already have an account?{" "}
-            <a href="/login" style={{ color: "black", fontWeight: "600" }}>
-              Login
-            </a>
+          {error && <p className="msg-error auth-alert">{error}</p>}
+          {success && (
+            <p className="msg-success auth-alert">
+              <CheckCircle2 size={18} /> {success}
+            </p>
+          )}
+
+          <label className="auth-field">
+            <span>Full Name</span>
+            <div className="auth-input-wrap">
+              <User size={18} />
+              <input
+                className="input-box"
+                type="text"
+                placeholder="Enter full name"
+                value={full_name}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+          </label>
+
+          <label className="auth-field">
+            <span>Email Address</span>
+            <div className="auth-input-wrap">
+              <Mail size={18} />
+              <input
+                className="input-box"
+                type="email"
+                placeholder="Enter email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </label>
+
+          <label className="auth-field">
+            <span>Phone</span>
+            <div className="auth-input-wrap">
+              <Phone size={18} />
+              <input
+                className="input-box"
+                type="text"
+                placeholder="Enter phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </label>
+
+          <label className="auth-field">
+            <span>Password</span>
+            <div className="auth-input-wrap">
+              <LockKeyhole size={18} />
+              <input
+                className="input-box"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                className="password-toggle"
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            <div className={`password-strength score-${passwordStrength.score}`}>
+              <span />
+              <small>{passwordStrength.label}</small>
+            </div>
+          </label>
+
+          <label className="auth-field">
+            <span>Confirm Password</span>
+            <div className="auth-input-wrap">
+              <LockKeyhole size={18} />
+              <input
+                className="input-box"
+                type={showConfirm ? "text" : "password"}
+                placeholder="Confirm password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
+              <button
+                className="password-toggle"
+                type="button"
+                onClick={() => setShowConfirm((value) => !value)}
+                aria-label={showConfirm ? "Hide password" : "Show password"}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </label>
+
+          <div className="form-actions">
+            <button className="btn-purple auth-submit" disabled={loading}>
+              {loading && <Loader2 className="auth-spinner" size={18} />}
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+          </div>
+
+          <p className="auth-switch-text">
+            Already have an account? <a href="/login">Login</a>
           </p>
         </form>
       </div>
-    </>
+    </section>
   );
 }

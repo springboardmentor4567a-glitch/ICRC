@@ -1,0 +1,338 @@
+/* =====================================================
+   ICRC Insurance Assistant Chatbot — Styling
+   ===================================================== */
+
+/* ── 1. Floating Icon (Default State) ── */
+.chat-floating-icon {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #4c44e8;
+  color: #ffffff;
+  border: none;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(76, 68, 232, 0.3);
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  outline: none;
+}
+
+.chat-floating-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 68, 232, 0.4);
+  background-color: #3730a3;
+}
+
+.chat-floating-icon:focus-visible {
+  box-shadow: 0 0 0 3px rgba(76, 68, 232, 0.4);
+  border: 2px solid #ffffff;
+}
+
+/* ── 2. Chat Panel Container ── */
+.chat-panel-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 380px;
+  height: 550px;
+  max-height: 600px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Animations */
+.chat-panel-container.fade-in {
+  animation: chatFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes chatFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── 3. Chat Header ── */
+.chat-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.chat-header-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e1b4b;
+  line-height: 1.2;
+}
+
+.chat-header-desc {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.chat-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.chat-close-btn:hover {
+  color: #64748b;
+}
+
+.chat-close-btn:focus-visible {
+  outline: 2px solid #4c44e8;
+  border-radius: 4px;
+}
+
+/* ── 4. Chat Messages Body ── */
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 85%;
+}
+
+.chat-message-row.assistant {
+  align-self: flex-start;
+}
+
+.chat-message-row.user {
+  align-self: flex-end;
+  justify-content: flex-end;
+  max-width: 80%;
+}
+
+.chat-avatar-mini {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  border: 1px solid #cbd5e1;
+}
+
+.chat-bubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.chat-bubble.assistant {
+  background-color: #ffffff;
+  color: #1e1b4b;
+  border: 1px solid #e2e8f0;
+  border-top-left-radius: 2px;
+}
+
+.chat-bubble.user {
+  background-color: #4c44e8;
+  color: #ffffff;
+  border-top-right-radius: 2px;
+}
+
+.chat-bubble p {
+  margin: 0;
+}
+
+.chat-inline-link {
+  color: #4c44e8;
+  text-decoration: underline;
+  font-weight: 700;
+  transition: color 0.15s;
+}
+
+.chat-bubble.user .chat-inline-link {
+  color: #ffffff;
+}
+
+.chat-inline-link:hover {
+  color: #3730a3;
+}
+
+/* Suggestions Box */
+.chat-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+  width: 100%;
+}
+
+.chat-suggestion-btn {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  outline: none;
+}
+
+.chat-suggestion-btn:hover:not(:disabled) {
+  background-color: #e2e8f0;
+  color: #1e1b4b;
+  border-color: #cbd5e1;
+  transform: translateX(2px);
+}
+
+.chat-suggestion-btn:focus-visible {
+  border-color: #4c44e8;
+  background-color: #eef2ff;
+}
+
+/* Typing Indicator Animation */
+.chat-bubble.typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.chat-typing-text {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.chat-typing-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.chat-typing-dots span {
+  width: 4px;
+  height: 4px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+  animation: chatDot 1.4s infinite ease-in-out both;
+}
+
+.chat-typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.chat-typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes chatDot {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* ── 5. Chat Input Footer ── */
+.chat-footer {
+  padding: 14px 16px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  gap: 10px;
+  background-color: #ffffff;
+  align-items: center;
+}
+
+.chat-input-field {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #111827;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.chat-input-field:focus {
+  border-color: #4c44e8;
+}
+
+.chat-send-btn {
+  background-color: #4c44e8;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-send-btn:hover:not(:disabled) {
+  background-color: #3730a3;
+}
+
+.chat-send-btn:disabled {
+  background-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* ── 6. Mobile & Responsive Layout ── */
+@media (max-width: 480px) {
+  .chat-floating-icon {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .chat-panel-container {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    height: auto;
+    max-height: calc(100vh - 24px);
+    border-radius: 12px;
+  }
+}

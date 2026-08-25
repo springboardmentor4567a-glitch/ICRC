@@ -69,3 +69,19 @@ class ClaimDocument(Base):
     filename = Column(String, nullable=False)
     s3_key = Column(String, nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+
+class PolicyApplication(Base):
+    """Demo plan application submitted by a logged-in user."""
+    __tablename__ = "policy_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    policy_id = Column(Integer, ForeignKey("policies.id"), nullable=False)
+    applicant_name = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
+    status = Column(String, default="pending")   # pending / approved / rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    policy = relationship("Policy")

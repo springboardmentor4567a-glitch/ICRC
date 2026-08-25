@@ -1,0 +1,318 @@
+/* =====================================================
+   ICRC Recommendations Module — Professional Intake
+   ===================================================== */
+
+.pref-page {
+  min-height: calc(100vh - var(--header-height, 64px));
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 16px 80px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ── Page Header ── */
+.pref-page-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.pref-kicker {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4c44e8;
+  margin-bottom: 8px;
+}
+
+.pref-page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 0 0 12px;
+}
+
+.pref-page-desc {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pref-info-banner {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #475569;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* ── Status Alerts ── */
+.pref-alert {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.pref-alert.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.pref-alert.success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+/* ── Sections ── */
+.pref-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.pref-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pref-section-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #4c44e8;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pref-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 4px;
+}
+
+.pref-section-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Grid & Fields ── */
+.pref-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pref-form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.pref-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.pref-req {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.pref-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.2s;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+}
+
+.pref-input:focus {
+  border-color: #4c44e8;
+  box-shadow: 0 0 0 3px rgba(76,68,232,0.1);
+}
+
+.pref-input.pref-input-error {
+  border-color: #dc2626;
+  background: #fff8f8;
+}
+
+.pref-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 6px 0 0;
+}
+
+.pref-field-error {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  margin: 6px 0 0;
+}
+
+/* ── Toggle Grid ── */
+.pref-toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pref-toggle-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  background: #f9fafb;
+}
+
+.pref-toggle-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pref-toggle-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+}
+
+/* Custom Switch Toggle */
+.pref-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.pref-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.pref-switch-track {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #d1d5db;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.pref-switch-track:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.pref-switch input:checked + .pref-switch-track {
+  background-color: #4c44e8;
+}
+
+.pref-switch input:focus + .pref-switch-track {
+  box-shadow: 0 0 0 3px rgba(76,68,232,0.2);
+}
+
+.pref-switch input:checked + .pref-switch-track:before {
+  transform: translateX(20px);
+}
+
+/* ── Submit Row ── */
+.pref-submit-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.pref-privacy-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.pref-submit-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 14px 24px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.pref-btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pref-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: pref-spin 0.7s linear infinite;
+}
+
+@keyframes pref-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .pref-page {
+    padding: 24px 16px 60px;
+  }
+  
+  .pref-section {
+    padding: 24px 16px;
+  }
+
+  .pref-grid,
+  .pref-toggle-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
